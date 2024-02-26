@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.LEDConstants;
 
 public class LedSubsystem extends SubsystemBase {
     private static AddressableLED led_bar;
@@ -25,7 +26,7 @@ public class LedSubsystem extends SubsystemBase {
     private static int m_rainbowFirstPixelHue = 0; 
 
     static {
-        led_bar = new AddressableLED(9);
+        led_bar = new AddressableLED(LEDConstants.kLEDBarPWM);
         led_bar.setLength(20);
 
         // allocate buffers

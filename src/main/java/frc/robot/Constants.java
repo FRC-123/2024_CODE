@@ -21,23 +21,6 @@ import edu.wpi.first.math.util.Units;
  */
 public final class Constants {
   public static final class DriveConstants {
-
-    public static final int kEncoderCPR = 4096;
-    public static final double kWheelDiameterMeters = 0.1524;
-    public static final double kGearRatio = 10.86;
-    public static final double kPositionConvFactor = ( Math.PI * kWheelDiameterMeters ) / kGearRatio;
-    public static final double kVelocityConvFactor = kPositionConvFactor / 60.0;
-
-    // These are example values only - DO NOT USE THESE FOR YOUR OWN ROBOT!
-    // These characterization values MUST be determined either experimentally or theoretically
-    // for *your* robot's drive.
-    // The Robot Characterization Toolsuite provides a convenient tool for obtaining these
-    // values for your robot.
-    public static final double ksVolts = 0.015114;
-    public static final double kvVoltSecondsPerMeter = 2.7641;
-    public static final double kaVoltSecondsSquaredPerMeter = 1.829;
-
-    // Example value only - as above, this must be tuned for your drive!
     public static final double kPDriveVel = 5.9245E-05; // sparkmax internal
     public static final double kMaxSpeedMetersPerSecond = 4.8;
     public static final double kMaxAngularSpeed = 2 * Math.PI; // radians per second
@@ -143,16 +126,8 @@ public final class Constants {
     public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
     public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
 
-    // Reasonable baseline values for a RAMSETE follower in units of meters and seconds
-    public static final double kPXController = 1;
-    public static final double kPYController = 1;
-    public static final double kPThetaController = 1;
-
     public static final TrapezoidProfile.Constraints kThetaControllerConstraints = new TrapezoidProfile.Constraints(
         kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
-      
-    public static final double normalAutoDistance = 3.8; //3.48 minimum 4.2 maximum
-    public static final double balenceAutoDistance = 5;
   }
 
   public static final class NeoMotorConstants {
@@ -165,5 +140,30 @@ public final class Constants {
     public static final int kMidFollowCanId = 10;
     public static final int kShootMainCanId = 11;
     public static final int kShootFollowCanId = 12;
+
+    public static final int kIntakeProxDIO;
+    public static final int kLoadedProxDIO;
+
+    public static final double kShooterP;
+    public static final double kShooterI;
+    public static final double kShooterD;
+    public static final double kShooterFF;
+    public static final double kShooterMinOutput;
+    public static final double kShooterMaxOutput;
+
+    public static final double kShooterDeadband;
+  }
+
+  public static final class WinchConstants {
+    public static final int kWinchCanId = 14;
+  }
+
+  public static final class ArmConstants {
+    public static final int kArmWinchCanId = 16;
+    public static final int kArmRollerCanId = 15;
+  }
+
+  public static final class LEDConstants {
+    public static final int kLEDBarPWM;
   }
 }
