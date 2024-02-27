@@ -54,7 +54,7 @@ public class RobotContainer {
     // Set the default drive command to split-stick arcade drive
     m_robotDrive.setDefaultCommand(new DefaultDriveCommand(m_robotDrive));
 
-    SendableChooser<AutoType> autoType = new SendableChooser<AutoType>();
+    /*SendableChooser<AutoType> autoType = new SendableChooser<AutoType>();
     autoType.addOption("Normal", AutoType.Normal);
     autoType.addOption("Balence", AutoType.Balence);
     autoType.setDefaultOption("Normal", AutoType.Normal);
@@ -73,7 +73,7 @@ public class RobotContainer {
     SmartDashboard.putData("Auto Piece", autoPiece);
     SmartDashboard.putData("Auto Rot", autorotate);
     SmartDashboard.putNumber("limelight constant", 25);
-    SmartDashboard.putNumber("limelight kp", 0.15);
+    SmartDashboard.putNumber("limelight kp", 0.15);*/
   }
 
   /**

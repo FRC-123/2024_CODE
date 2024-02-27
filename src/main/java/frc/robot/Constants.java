@@ -141,8 +141,8 @@ public final class Constants {
     public static final int kShootMainCanId = 11;
     public static final int kShootFollowCanId = 12;
 
-    public static final int kIntakeProxDIO;
-    public static final int kLoadedProxDIO;
+    public static final int kIntakeProxDIO = 0;
+    public static final int kLoadedProxDIO = 1;
 
     public static final double kShooterP;
     public static final double kShooterI;
@@ -151,16 +151,32 @@ public final class Constants {
     public static final double kShooterMinOutput;
     public static final double kShooterMaxOutput;
 
-    public static final double kShooterDeadband;
+    public static final double kShooterSpeedDeadband;
+
+    public static final double kIntakeSpeed;
+    public static final double kMidRollerIntakeSpeed;
+    public static final double kMidRollerGrabSpeed;
+    public static final double kMidRollerKickSpeed;
   }
 
   public static final class WinchConstants {
     public static final int kWinchCanId = 14;
+
+    public static final double kWinchP;
+    public static final double kWinchI;
+    public static final double kWinchD;
+    public static final double kWinchFF;
+    public static final double kWinchMinOutput;
+    public static final double kWinchMaxOutput;
+
+    public static final double kPositionDeadband;
   }
 
   public static final class ArmConstants {
     public static final int kArmWinchCanId = 16;
     public static final int kArmRollerCanId = 15;
+
+    public static final int kEncoderDIO = 5;
   }
 
   public static final class LEDConstants {

@@ -4,11 +4,9 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.OIConstants;
-import frc.robot.LimelightHelpers;
-import frc.robot.LimelightHelpers.LimelightResults;
 import frc.robot.subsystems.DriveSubsystem;
 
-public class DefaultDriveCommand extends Command{
+public class DefaultDriveCommand extends Command {
     private final DriveSubsystem driveSubsystem;
     private XboxController m_drivController = new XboxController(OIConstants.kDriverControllerPort);
 
@@ -19,13 +17,13 @@ public class DefaultDriveCommand extends Command{
 
     @Override
     public void execute() {
-        if(m_drivController.getAButton()) {
+        /*if(m_drivController.getAButton()) {
             LimelightResults results = LimelightHelpers.getLatestResults("limelight");
             if(results.targetingResults.targets_Retro.length > 0) {
                 driveSubsystem.drive(0, 0, Math.copySign(Math.abs(results.targetingResults.targets_Retro[0].tx/30) + 0.05, -results.targetingResults.targets_Retro[0].tx), false, true);
                 return;
             }
-        }
+        }*/
         int fineTurn = 0;
         if(m_drivController.getXButton()) {
             fineTurn += 1;

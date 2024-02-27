@@ -21,8 +21,8 @@ public class ShooterSubsystem extends SubsystemBase {
   private final SparkPIDController kShootPID = kShootMain.getPIDController();
   private double targetSetPoint = 0;
 
-  private final DigitalInput kIntakeProx = new DigitalInput(ShooterConstants.kIntakeProxDIO);
-  private final DigitalInput kLoadedProx = new DigitalInput(ShooterConstants.kLoadedProxDIO);
+  private final DigitalInput intakeProx = new DigitalInput(ShooterConstants.kIntakeProxDIO);
+  private final DigitalInput loadedProx = new DigitalInput(ShooterConstants.kLoadedProxDIO);
 
   public ShooterSubsystem() {
     CommandScheduler.getInstance().registerSubsystem(this);
@@ -43,7 +43,7 @@ public class ShooterSubsystem extends SubsystemBase {
     kShootPID.setOutputRange(ShooterConstants.kShooterMinOutput, ShooterConstants.kShooterMaxOutput);
   }
 
-  public void setIntake(double setPoint) {
+  public void setIntakeRollers(double setPoint) {
     kIntake.set(setPoint);
   }
 
@@ -57,6 +57,53 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public boolean atSpeed() {
-    return Math.abs(kShootMain.getEncoder().getVelocity() - targetSetPoint) < ShooterConstants.kShooterDeadband;
+    return Math.abs(kShootMain.getEncoder().getVelocity() - targetSetPoint) < ShooterConstants.kShooterSpeedDeadband;
+  }
+
+  public void intake() {
+    setIntakeRollers(ShooterConstants.kIntakeSpeed);
+    setMidRollers(ShooterConstants.kMidRollerIntakeSpeed);
+  }
+
+  public void stopRollers(boolean stopShooterRollers) {
+    setIntakeRollers(0);
+    setMidRollers(0);
+    if(stopShooterRollers) {
+      stopShooterRollers();
+    }
+  }
+
+  public void stopShooterRollers() {
+    kShootPID.setReference(0, ControlType.kDutyCycle);
+    targetSetPoint = 0;
+  }
+
+  public void speedUp(double targetSpeed) {
+    setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
+    setShooterVelocity(targetSpeed);
+  }
+
+  public void kickNote(boolean checkForSpeed) {
+    if(targetSetPoint > 0 && checkForSpeed) {
+      if(atSpeed()) {
+        setMidRollers(ShooterConstants.kMidRollerKickSpeed);
+      }
+    }
+    else {
+      setMidRollers(ShooterConstants.kMidRollerKickSpeed);
+    }
+  }
+
+  public void chainShoot(double targetSpeed) {
+    setShooterVelocity(targetSpeed);
+    intake();
+  }
+
+  public boolean hasNote() {
+    return loadedProx.get();
+  }
+
+  public boolean intakingNote() {
+    return intakeProx.get();
   }
 }
