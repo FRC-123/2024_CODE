@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
@@ -26,6 +27,7 @@ import frc.robot.Constants.OIConstants;
 import frc.robot.LimelightHelpers.LimelightResults;
 import frc.robot.commands.DefaultDriveCommand;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -36,14 +38,15 @@ import frc.robot.subsystems.DriveSubsystem;
 public class RobotContainer {
   // The robot's subsystems
   private final DriveSubsystem m_robotDrive = new DriveSubsystem();
+  private final ShooterSubsystem m_ShooterSubsystem = new ShooterSubsystem();
   //private final HiArmSubsystem m_hiArm = new HiArmSubsystem();
   //private final LoArmSubsystem m_loArm = new LoArmSubsystem(m_hiArm);
 
 
   // The driver's controller
   XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
-  //XboxController m_armController = new XboxController(OIConstants.kArmControllerPort);
-  //CommandXboxController m_armControllerCommand = new CommandXboxController(OIConstants.kArmControllerPort);
+  XboxController m_armController = new XboxController(OIConstants.kArmControllerPort);
+  CommandXboxController m_armControllerCommand = new CommandXboxController(OIConstants.kArmControllerPort);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -124,7 +127,12 @@ public class RobotContainer {
     // Led bar triggers
     new JoystickButton(m_driverController, Button.kA.value)
         .whileTrue(new RunCommand(() -> m_robotDrive.setX(), m_robotDrive));
+
+    m_armControllerCommand.povUp().onTrue(new InstantCommand(() -> m_ShooterSubsystem.setShooterVelocity(100)));
+    m_armControllerCommand.povUp().onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopShooterRollers()));
+
     }
+    
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.

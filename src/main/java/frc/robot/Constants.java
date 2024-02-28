@@ -144,32 +144,32 @@ public final class Constants {
     public static final int kIntakeProxDIO = 0;
     public static final int kLoadedProxDIO = 1;
 
-    public static final double kShooterP;
-    public static final double kShooterI;
-    public static final double kShooterD;
-    public static final double kShooterFF;
-    public static final double kShooterMinOutput;
-    public static final double kShooterMaxOutput;
+    public static final double kShooterP = 0.0001;
+    public static final double kShooterI = 0;
+    public static final double kShooterD = 0;
+    public static final double kShooterFF = 0.002;
+    public static final double kShooterMinOutput = -1;
+    public static final double kShooterMaxOutput = 1;
 
-    public static final double kShooterSpeedDeadband;
+    public static final double kShooterSpeedDeadband = 1; //TODO
 
-    public static final double kIntakeSpeed;
-    public static final double kMidRollerIntakeSpeed;
-    public static final double kMidRollerGrabSpeed;
-    public static final double kMidRollerKickSpeed;
+    public static final double kIntakeSpeed = 0.3; //TODO
+    public static final double kMidRollerIntakeSpeed = 0.4; //TODO
+    public static final double kMidRollerGrabSpeed = -0.03; //TODO
+    public static final double kMidRollerKickSpeed = 0.4; //TODO
   }
 
   public static final class WinchConstants {
     public static final int kWinchCanId = 14;
 
-    public static final double kWinchP;
-    public static final double kWinchI;
-    public static final double kWinchD;
-    public static final double kWinchFF;
-    public static final double kWinchMinOutput;
-    public static final double kWinchMaxOutput;
+    public static final double kWinchP = 0.04; //TODO
+    public static final double kWinchI = 0; //TODO
+    public static final double kWinchD = 0; //TODO
+    public static final double kWinchFF = 1 / ModuleConstants.kDriveWheelFreeSpeedRps; //TODO
+    public static final double kWinchMinOutput = -1; //TODO
+    public static final double kWinchMaxOutput = 1; //TODO
 
-    public static final double kPositionDeadband;
+    public static final double kPositionDeadband = 5; //TODO
   }
 
   public static final class ArmConstants {
@@ -180,6 +180,6 @@ public final class Constants {
   }
 
   public static final class LEDConstants {
-    public static final int kLEDBarPWM;
+    public static final int kLEDBarPWM = 9; //TODO
   }
 }

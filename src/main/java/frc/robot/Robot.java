@@ -26,11 +26,11 @@ import frc.robot.subsystems.LedSubsystem;
  */
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
-  private CANSparkMax intake = new CANSparkMax(ShooterConstants.kIntakeCanId, MotorType.kBrushed);
+  /*private CANSparkMax intake = new CANSparkMax(ShooterConstants.kIntakeCanId, MotorType.kBrushed);
   private CANSparkMax midmain = new CANSparkMax(ShooterConstants.kMidMainCanId, MotorType.kBrushless);
   private CANSparkMax midfollow = new CANSparkMax(ShooterConstants.kMidFollowCanId, MotorType.kBrushless);
   private CANSparkMax shootmain = new CANSparkMax(ShooterConstants.kShootMainCanId, MotorType.kBrushless);
-  private CANSparkMax shootfollow = new CANSparkMax(ShooterConstants.kShootFollowCanId, MotorType.kBrushless);
+  private CANSparkMax shootfollow = new CANSparkMax(ShooterConstants.kShootFollowCanId, MotorType.kBrushless);*/
 
   private XboxController testController = new XboxController(1);
   private RobotContainer m_robotContainer;
@@ -50,13 +50,13 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("intake", 0.3);
     SmartDashboard.putNumber("mid", 0.05);
     SmartDashboard.putNumber("shoot", 1);
-    midmain.setIdleMode(IdleMode.kBrake);
+    /*midmain.setIdleMode(IdleMode.kBrake);
     midfollow.setIdleMode(IdleMode.kBrake);
     intake.setInverted(true);
     midfollow.follow(midmain, true);
     midmain.setInverted(false);
     shootfollow.follow(shootmain, true);
-    shootmain.setInverted(true);
+    shootmain.setInverted(true);*/
     //m_robotContainer.setBrakeMode(IdleMode.kCoast);
     //m_led_subsystem = new LedSubsystem();   // create an instance, which will initialize all buffers etc
     // addPeriodic(() -> our_alliance = DriverStation.getAlliance(), 1);
@@ -134,7 +134,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     LedSubsystem.set_dynamic_message();
-    double midspeed = 0;
+    /*double midspeed = 0;
     if(testController.getAButton()) {
       intake.set(0.6);
       midspeed = 0.4;
@@ -152,7 +152,7 @@ public class Robot extends TimedRobot {
     if(testController.getYButton()) {
       midspeed = 0.4;
     }
-    midmain.set(midspeed);
+    midmain.set(midspeed);*/
     /*double intakespeed = 0;
     if(detect.get()) {
       midmain.set(-.05);
@@ -183,7 +183,7 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
-    double midspeed = 0;
+    /*double midspeed = 0;
     if(testController.getAButton()) {
       intake.set(0.4);
       midspeed = 0.4;
@@ -201,7 +201,7 @@ public class Robot extends TimedRobot {
     if(testController.getYButton()) {
       midspeed = 0.4;
     }
-    midmain.set(midspeed);
+    midmain.set(midspeed);*/
     /*double intakespeed = 0;
     if(detect.get()) {
       midmain.set(-.05);

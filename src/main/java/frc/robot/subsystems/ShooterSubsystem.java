@@ -7,6 +7,7 @@ import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
@@ -19,6 +20,7 @@ public class ShooterSubsystem extends SubsystemBase {
   private final CANSparkMax kShootFollow = new CANSparkMax(ShooterConstants.kShootFollowCanId, MotorType.kBrushless);
 
   private final SparkPIDController kShootPID = kShootMain.getPIDController();
+  private final SparkPIDController kShootFollowPID = kShootFollow.getPIDController();
   private double targetSetPoint = 0;
 
   private final DigitalInput intakeProx = new DigitalInput(ShooterConstants.kIntakeProxDIO);
@@ -33,7 +35,7 @@ public class ShooterSubsystem extends SubsystemBase {
     kIntake.setInverted(true);
     kMidFollow.follow(kMidMain, true);
     kMidMain.setInverted(false);
-    kShootFollow.follow(kShootMain, true);
+    //kShootFollow.follow(kShootMain, true);
     kShootMain.setInverted(true);
 
     kShootPID.setP(ShooterConstants.kShooterP);
@@ -41,6 +43,12 @@ public class ShooterSubsystem extends SubsystemBase {
     kShootPID.setD(ShooterConstants.kShooterD);
     kShootPID.setFF(ShooterConstants.kShooterFF);
     kShootPID.setOutputRange(ShooterConstants.kShooterMinOutput, ShooterConstants.kShooterMaxOutput);
+
+    kShootFollowPID.setP(ShooterConstants.kShooterP);
+    kShootFollowPID.setI(ShooterConstants.kShooterI);
+    kShootFollowPID.setD(ShooterConstants.kShooterD);
+    kShootFollowPID.setFF(ShooterConstants.kShooterFF);
+    kShootFollowPID.setOutputRange(ShooterConstants.kShooterMinOutput, ShooterConstants.kShooterMaxOutput);
   }
 
   public void setIntakeRollers(double setPoint) {
@@ -53,6 +61,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public void setShooterVelocity(double setPoint) {
     kShootPID.setReference(setPoint, ControlType.kVelocity);
+    kShootFollowPID.setReference(setPoint, ControlType.kVelocity);
     targetSetPoint = setPoint;
   }
 
@@ -75,6 +84,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public void stopShooterRollers() {
     kShootPID.setReference(0, ControlType.kDutyCycle);
+    kShootFollowPID.setReference(0, ControlType.kDutyCycle);
     targetSetPoint = 0;
   }
 
@@ -105,5 +115,10 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public boolean intakingNote() {
     return intakeProx.get();
+  }
+
+  @Override
+  public void periodic() {
+    SmartDashboard.putNumber("shooterspeed", kShootMain.getEncoder().getVelocity());
   }
 }
