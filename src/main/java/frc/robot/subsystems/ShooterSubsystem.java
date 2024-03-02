@@ -37,6 +37,7 @@ public class ShooterSubsystem extends SubsystemBase {
     kMidMain.setInverted(false);
     //kShootFollow.follow(kShootMain, true);
     kShootMain.setInverted(true);
+    kShootFollow.setInverted(false);
 
     kShootPID.setP(ShooterConstants.kShooterP);
     kShootPID.setI(ShooterConstants.kShooterI);
@@ -120,5 +121,10 @@ public class ShooterSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     SmartDashboard.putNumber("shooterspeed", kShootMain.getEncoder().getVelocity());
+  }
+
+  public void tempSetSpeed(double speed) {
+    kShootPID.setReference(speed, ControlType.kDutyCycle);
+    kShootFollowPID.setReference(speed, ControlType.kDutyCycle);
   }
 }

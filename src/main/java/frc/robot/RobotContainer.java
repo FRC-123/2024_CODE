@@ -4,30 +4,40 @@
 
 package frc.robot;
 
+import java.time.Instant;
 import java.util.List;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
+import frc.robot.Constants.ShooterConstants;
 import frc.robot.LimelightHelpers.LimelightResults;
 import frc.robot.commands.DefaultDriveCommand;
+import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.ArmSubsystem.ArmState;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -39,6 +49,7 @@ public class RobotContainer {
   // The robot's subsystems
   private final DriveSubsystem m_robotDrive = new DriveSubsystem();
   private final ShooterSubsystem m_ShooterSubsystem = new ShooterSubsystem();
+  private final ArmSubsystem m_ArmSubsystem = new ArmSubsystem();
   //private final HiArmSubsystem m_hiArm = new HiArmSubsystem();
   //private final LoArmSubsystem m_loArm = new LoArmSubsystem(m_hiArm);
 
@@ -128,10 +139,15 @@ public class RobotContainer {
     new JoystickButton(m_driverController, Button.kA.value)
         .whileTrue(new RunCommand(() -> m_robotDrive.setX(), m_robotDrive));
 
-    m_armControllerCommand.povUp().onTrue(new InstantCommand(() -> m_ShooterSubsystem.setShooterVelocity(100)));
-    m_armControllerCommand.povUp().onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopShooterRollers()));
-
-    }
+    //m_armControllerCommand.povUp().onTrue(new InstantCommand(() -> m_ShooterSubsystem.setShooterVelocity(100)));
+    //m_armControllerCommand.povUp().onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopShooterRollers()));
+    m_armControllerCommand.povUp().onTrue(new InstantCommand(() -> m_ArmSubsystem.setState(ArmState.kUp), m_ArmSubsystem));
+    m_armControllerCommand.povDown().onTrue(new InstantCommand(() -> m_ArmSubsystem.setState(ArmState.kDown), m_ArmSubsystem));
+    m_armControllerCommand.leftBumper().onTrue(new InstantCommand(() -> m_ArmSubsystem.intakeNote()));
+    m_armControllerCommand.rightBumper().onTrue(new InstantCommand(() -> m_ArmSubsystem.expellNote()));
+    m_armControllerCommand.leftBumper().onFalse(new InstantCommand(() -> m_ArmSubsystem.stopRoller()));
+    m_armControllerCommand.rightBumper().onFalse(new InstantCommand(() -> m_ArmSubsystem.stopRoller()));
+  }
     
 
   /**
@@ -162,11 +178,20 @@ public class RobotContainer {
     // // An example trajectory to follow.  All units in meters.
     Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
         // Start at the origin facing the +X direction
-        new Pose2d(0, 0, Rotation2d.fromDegrees(90)),
+        new Pose2d(0, 0, Rotation2d.fromDegrees(0)),
         // Pass through these two interior waypoints, making an 's' curve path
         List.of(/*new Translation2d(1, 1), new Translation2d(2, -1)*/),
         // End 3 meters straight ahead of where we started, facing forward
-        new Pose2d(3, 0, Rotation2d.fromDegrees(90)),
+        new Pose2d(1.3716, 0, Rotation2d.fromDegrees(0)),
+        config);
+    
+    Trajectory exampleTrajectoryBack = TrajectoryGenerator.generateTrajectory(
+        // Start at the origin facing the +X direction
+        new Pose2d(0, 0, Rotation2d.fromDegrees(0)),
+        // Pass through these two interior waypoints, making an 's' curve path
+        List.of(/*new Translation2d(1, 1), new Translation2d(2, -1)*/),
+        // End 3 meters straight ahead of where we started, facing forward
+        new Pose2d(-1.3716, 0, Rotation2d.fromDegrees(0)),
         config);
 
     // /*RamseteCommand ramseteCommand =
@@ -192,10 +217,10 @@ public class RobotContainer {
     m_robotDrive.resetOdometry(exampleTrajectory.getInitialPose());
     // Reset odometry to the starting pose of the trajectory.
     //m_robotDrive.resetOdometry(exampleTrajectory.getInitialPose()); // for ramsete command
-    SendableChooser<AutoType> type = (SendableChooser) SmartDashboard.getData("Auto Type");
-    SendableChooser<AutoPiece> piece = (SendableChooser) SmartDashboard.getData("Auto Piece");
-    SendableChooser<AutoRotate> rotate = (SendableChooser) SmartDashboard.getData("Auto Rot");
-    /*ProfiledPIDController thetaController = new ProfiledPIDController(1.25, 0, 0, new TrapezoidProfile.Constraints(2*Math.PI, 2*Math.PI));
+    //SendableChooser<AutoType> type = (SendableChooser) SmartDashboard.getData("Auto Type");
+    //SendableChooser<AutoPiece> piece = (SendableChooser) SmartDashboard.getData("Auto Piece");
+    //SendableChooser<AutoRotate> rotate = (SendableChooser) SmartDashboard.getData("Auto Rot");
+    ProfiledPIDController thetaController = new ProfiledPIDController(1.25, 0, 0, new TrapezoidProfile.Constraints(2*Math.PI, 2*Math.PI));
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
     SwerveControllerCommand swerveControllerCommand =  new SwerveControllerCommand(exampleTrajectory, 
         m_robotDrive::getPose, 
@@ -203,18 +228,57 @@ public class RobotContainer {
         new PIDController(1, 0, 0), 
         new PIDController(1, 0, 0), 
         thetaController,
-        () -> {
+        /*() -> {
             double angle = -Math.atan((2.0 - m_robotDrive.getPose().getY())/m_robotDrive.getPose().getX());
             if(angle < 0) {
                 angle = Math.PI + angle;
             }
             //return Rotation2d.fromRadians(angle);
             return Rotation2d.fromRadians(angle);
-        },
+        },*/
         m_robotDrive::setModuleStates,
         m_robotDrive);
-    return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive);*/
-    return new RunCommand(() -> {
+    SwerveControllerCommand swerveControllerCommandBack =  new SwerveControllerCommand(exampleTrajectoryBack, 
+        m_robotDrive::getPose, 
+        Constants.DriveConstants.kDriveKinematics, 
+        new PIDController(1, 0, 0), 
+        new PIDController(1, 0, 0), 
+        thetaController,
+        /*() -> {
+            double angle = -Math.atan((2.0 - m_robotDrive.getPose().getY())/m_robotDrive.getPose().getX());
+            if(angle < 0) {
+                angle = Math.PI + angle;
+            }
+            //return Rotation2d.fromRadians(angle);
+            return Rotation2d.fromRadians(angle);
+        },*/
+        m_robotDrive::setModuleStates,
+        m_robotDrive);
+
+    return new InstantCommand(() -> {m_ShooterSubsystem.tempSetSpeed(0.45);
+            m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
+        }, m_ShooterSubsystem)
+        .andThen(new WaitCommand(1))
+        .andThen(new InstantCommand(() -> m_ShooterSubsystem.kickNote(false), m_ShooterSubsystem))
+        .andThen(new WaitCommand(0.75))
+        .andThen(new ParallelCommandGroup(swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive), new InstantCommand(() -> {
+            m_ShooterSubsystem.stopShooterRollers();
+            m_ShooterSubsystem.intake();
+        })))
+        .andThen(new WaitCommand(1))
+        .andThen(new InstantCommand(() -> {
+            m_ShooterSubsystem.stopRollers(false);
+            m_ShooterSubsystem.tempSetSpeed(0.45);
+            m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
+        }))
+        .andThen(new InstantCommand(() -> m_robotDrive.resetOdometry(exampleTrajectoryBack.getInitialPose())))
+        .andThen(new RunCommand(() -> m_robotDrive.drive(-0.3, 0, 0, false, true), m_robotDrive)
+                    .until(() -> m_robotDrive.getPose().minus(new Pose2d(-1, 0, new Rotation2d(0))).getX() <= 0))
+        .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
+        .andThen(() -> m_ShooterSubsystem.kickNote(false))
+        .andThen(new WaitCommand(10));
+    //return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive);
+    /*return new RunCommand(() -> {
         LimelightResults results = LimelightHelpers.getLatestResults("limelight");
         if(results.targetingResults.targets_Fiducials.length > 0) {
             double angle = Math.atan(results.targetingResults.targets_Fiducials[0].getTargetPose_CameraSpace().getX()/results.targetingResults.targets_Fiducials[0].getTargetPose_CameraSpace().getZ());
@@ -224,7 +288,7 @@ public class RobotContainer {
         else {
             m_robotDrive.drive(0, 0, 0, false, false);
         }
-    }, m_robotDrive);
+    }, m_robotDrive);*/
     /*if(type.getSelected().equals(AutoType.Normal)) {
         if(piece.getSelected().equals(AutoPiece.Cube)) {
             return new InstantCommand(() -> m_hiArm.moveToPosition(185), m_hiArm) //Normal 

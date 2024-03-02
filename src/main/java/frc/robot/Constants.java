@@ -121,7 +121,7 @@ public final class Constants {
   }
 
   public static final class AutoConstants {
-    public static final double kMaxSpeedMetersPerSecond = 2;
+    public static final double kMaxSpeedMetersPerSecond = 0.75;
     public static final double kMaxAccelerationMetersPerSecondSquared = 1;
     public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
     public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
@@ -153,8 +153,8 @@ public final class Constants {
 
     public static final double kShooterSpeedDeadband = 1; //TODO
 
-    public static final double kIntakeSpeed = 0.3; //TODO
-    public static final double kMidRollerIntakeSpeed = 0.4; //TODO
+    public static final double kIntakeSpeed = 0.4; //TODO
+    public static final double kMidRollerIntakeSpeed = 0.5; //TODO
     public static final double kMidRollerGrabSpeed = -0.03; //TODO
     public static final double kMidRollerKickSpeed = 0.4; //TODO
   }
@@ -177,6 +177,12 @@ public final class Constants {
     public static final int kArmRollerCanId = 15;
 
     public static final int kEncoderDIO = 5;
+
+    public static final double kDownSpeed = 1;
+    public static final double kUpSpeed = -0.75;
+    public static final double kIntakeSpeed = 0.3;
+    public static final double kExpellSpeed = -0.35;
+    public static final double kHoldSpeed = 0.05;
   }
 
   public static final class LEDConstants {

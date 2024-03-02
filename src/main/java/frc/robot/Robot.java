@@ -9,6 +9,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
@@ -50,6 +51,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("intake", 0.3);
     SmartDashboard.putNumber("mid", 0.05);
     SmartDashboard.putNumber("shoot", 1);
+    //CameraServer.startAutomaticCapture();
     /*midmain.setIdleMode(IdleMode.kBrake);
     midfollow.setIdleMode(IdleMode.kBrake);
     intake.setInverted(true);
