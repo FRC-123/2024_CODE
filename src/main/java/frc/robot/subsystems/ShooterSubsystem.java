@@ -25,6 +25,9 @@ public class ShooterSubsystem extends SubsystemBase {
 
   private final DigitalInput intakeProx = new DigitalInput(ShooterConstants.kIntakeProxDIO);
   private final DigitalInput loadedProx = new DigitalInput(ShooterConstants.kLoadedProxDIO);
+  private boolean intakeProxState = false;
+  private boolean loadedProxState = false;
+  public boolean holdingNote = false;
 
   public ShooterSubsystem() {
     CommandScheduler.getInstance().registerSubsystem(this);
@@ -120,11 +123,31 @@ public class ShooterSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    boolean intakestate = intakeProx.get();
+    boolean loadedstate = !loadedProx.get();
+    if(intakestate && !intakeProxState) {
+      holdingNote = true;
+    }
+    if(loadedstate && loadedProxState) {
+      holdingNote = false;
+    }
+    intakeProxState = intakestate;
+    loadedProxState = !loadedstate;
     SmartDashboard.putNumber("shooterspeed", kShootMain.getEncoder().getVelocity());
+    SmartDashboard.putBoolean("hasnote", holdingNote);
   }
 
   public void tempSetSpeed(double speed) {
     kShootPID.setReference(speed, ControlType.kDutyCycle);
     kShootFollowPID.setReference(speed, ControlType.kDutyCycle);
   }
+
+  /*public boolean intakeFallingEdge() {
+    boolean isFalling = false;
+    if(!intakeProx.get() && intakeProxState) {
+      isFalling = true;
+    }
+    intakeProxState = intakeProx.get();
+    return isFalling;
+  }*/
 }

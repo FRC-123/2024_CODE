@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.AutoConstants;
@@ -168,31 +169,26 @@ public class RobotContainer {
     //         5);
 
     // // Create config for trajectory
-     TrajectoryConfig config =
-         new TrajectoryConfig(
-                 AutoConstants.kMaxSpeedMetersPerSecond,
-                 AutoConstants.kMaxAccelerationMetersPerSecondSquared)
-             // Add kinematics to ensure max speed is actually obeyed
-             .setKinematics(DriveConstants.kDriveKinematics);
+    TrajectoryConfig config =
+        new TrajectoryConfig(
+                AutoConstants.kMaxSpeedMetersPerSecond,
+                AutoConstants.kMaxAccelerationMetersPerSecondSquared)
+            .setKinematics(DriveConstants.kDriveKinematics);
+    TrajectoryConfig configBackwards =
+        new TrajectoryConfig(
+                AutoConstants.kMaxSpeedMetersPerSecond,
+                AutoConstants.kMaxAccelerationMetersPerSecondSquared)
+            .setKinematics(DriveConstants.kDriveKinematics)
+            .setReversed(true);
 
     // // An example trajectory to follow.  All units in meters.
     Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
-        // Start at the origin facing the +X direction
-        new Pose2d(0, 0, Rotation2d.fromDegrees(0)),
-        // Pass through these two interior waypoints, making an 's' curve path
-        List.of(/*new Translation2d(1, 1), new Translation2d(2, -1)*/),
-        // End 3 meters straight ahead of where we started, facing forward
-        new Pose2d(1.3716, 0, Rotation2d.fromDegrees(0)),
+        List.of(new Pose2d(0, 0, new Rotation2d()), new Pose2d(1.3716, 0, new Rotation2d())),
         config);
     
     Trajectory exampleTrajectoryBack = TrajectoryGenerator.generateTrajectory(
-        // Start at the origin facing the +X direction
-        new Pose2d(0, 0, Rotation2d.fromDegrees(0)),
-        // Pass through these two interior waypoints, making an 's' curve path
-        List.of(/*new Translation2d(1, 1), new Translation2d(2, -1)*/),
-        // End 3 meters straight ahead of where we started, facing forward
-        new Pose2d(-1.3716, 0, Rotation2d.fromDegrees(0)),
-        config);
+        List.of(new Pose2d(1.3716, 0, new Rotation2d()), new Pose2d(0, 0, new Rotation2d())),
+        configBackwards);
 
     // /*RamseteCommand ramseteCommand =
     //     new RamseteCommand(
@@ -213,7 +209,6 @@ public class RobotContainer {
     //     RamseteCommand ramseteCommand = 
     //         new RamseteCommand(exampleTrajectory, m_robotDrive::getPose, new RamseteController(AutoConstants.kRamseteB, AutoConstants.kRamseteZeta), DriveConstants.kDriveKinematics, m_robotDrive::tankMetersPerSecond, m_robotDrive);
     m_robotDrive.zeroHeading();
-    m_robotDrive.setFieldRelativeOffset(0);
     m_robotDrive.resetOdometry(exampleTrajectory.getInitialPose());
     // Reset odometry to the starting pose of the trajectory.
     //m_robotDrive.resetOdometry(exampleTrajectory.getInitialPose()); // for ramsete command
@@ -222,7 +217,7 @@ public class RobotContainer {
     //SendableChooser<AutoRotate> rotate = (SendableChooser) SmartDashboard.getData("Auto Rot");
     ProfiledPIDController thetaController = new ProfiledPIDController(1.25, 0, 0, new TrapezoidProfile.Constraints(2*Math.PI, 2*Math.PI));
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
-    SwerveControllerCommand swerveControllerCommand =  new SwerveControllerCommand(exampleTrajectory, 
+    SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(exampleTrajectory, 
         m_robotDrive::getPose, 
         Constants.DriveConstants.kDriveKinematics, 
         new PIDController(1, 0, 0), 
@@ -254,8 +249,8 @@ public class RobotContainer {
         },*/
         m_robotDrive::setModuleStates,
         m_robotDrive);
-
-    return new InstantCommand(() -> {m_ShooterSubsystem.tempSetSpeed(0.45);
+    //return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive);
+    /*return new InstantCommand(() -> {m_ShooterSubsystem.tempSetSpeed(0.45);
             m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
         }, m_ShooterSubsystem)
         .andThen(new WaitCommand(1))
@@ -276,7 +271,22 @@ public class RobotContainer {
                     .until(() -> m_robotDrive.getPose().minus(new Pose2d(-1, 0, new Rotation2d(0))).getX() <= 0))
         .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
         .andThen(() -> m_ShooterSubsystem.kickNote(false))
-        .andThen(new WaitCommand(10));
+        .andThen(new WaitCommand(1))
+        .andThen(() -> m_ShooterSubsystem.stopRollers(true));*/
+    return new InstantCommand(() -> {m_ShooterSubsystem.tempSetSpeed(0.45);
+            m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
+        }, m_ShooterSubsystem)
+        .andThen(new WaitCommand(1))
+        .andThen(new InstantCommand(() -> m_ShooterSubsystem.kickNote(false), m_ShooterSubsystem))
+        .andThen(new WaitUntilCommand(() -> !m_ShooterSubsystem.hasNote()))
+        .andThen(new WaitCommand(0.5))
+        .andThen(() -> {
+            m_ShooterSubsystem.stopShooterRollers();
+            m_ShooterSubsystem.intake();
+        });
+        //.andThen(swerveControllerCommand.raceWith(new WaitUntilCommand(m_ShooterSubsystem::intakeFallingEdge)));
+
+//() -> m_robotDrive.drive(0, 0, 0, false, false)
     //return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive);
     /*return new RunCommand(() -> {
         LimelightResults results = LimelightHelpers.getLatestResults("limelight");
