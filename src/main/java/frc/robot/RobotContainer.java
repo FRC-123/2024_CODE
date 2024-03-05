@@ -148,6 +148,9 @@ public class RobotContainer {
     m_armControllerCommand.rightBumper().onTrue(new InstantCommand(() -> m_ArmSubsystem.expellNote()));
     m_armControllerCommand.leftBumper().onFalse(new InstantCommand(() -> m_ArmSubsystem.stopRoller()));
     m_armControllerCommand.rightBumper().onFalse(new InstantCommand(() -> m_ArmSubsystem.stopRoller()));
+    m_armControllerCommand.x().onTrue(new InstantCommand(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal)));
+    m_armControllerCommand.x().onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopShooterRollers()));
+
   }
     
 
@@ -157,6 +160,7 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
+    m_ShooterSubsystem.holdingNote = false;
     //return new InstantCommand();
     // Create a voltage constraint to ensure we don't accelerate too fast
     // var autoVoltageConstraint =

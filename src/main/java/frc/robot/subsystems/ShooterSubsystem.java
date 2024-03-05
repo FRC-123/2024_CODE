@@ -124,16 +124,20 @@ public class ShooterSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     boolean intakestate = intakeProx.get();
-    boolean loadedstate = !loadedProx.get();
+    boolean loadedstate = loadedProx.get();
+    if(intakestate) {
+      SmartDashboard.putBoolean("wastrue", true);
+    }
     if(intakestate && !intakeProxState) {
       holdingNote = true;
     }
-    if(loadedstate && loadedProxState) {
+    if(loadedstate && !loadedProxState) {
       holdingNote = false;
     }
     intakeProxState = intakestate;
-    loadedProxState = !loadedstate;
+    loadedProxState = loadedstate;
     SmartDashboard.putNumber("shooterspeed", kShootMain.getEncoder().getVelocity());
+    SmartDashboard.putBoolean("atspeed", atSpeed());
     SmartDashboard.putBoolean("hasnote", holdingNote);
   }
 

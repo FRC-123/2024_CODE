@@ -144,15 +144,16 @@ public final class Constants {
     public static final int kIntakeProxDIO = 0;
     public static final int kLoadedProxDIO = 1;
 
-    public static final double kShooterP = 0.0001;
+    public static final double kShooterP = 0.000127;
     public static final double kShooterI = 0;
     public static final double kShooterD = 0;
-    public static final double kShooterFF = 0.002;
+    public static final double kShooterFF = 0.00017;
     public static final double kShooterMinOutput = -1;
     public static final double kShooterMaxOutput = 1;
 
-    public static final double kShooterSpeedDeadband = 1; //TODO
+    public static final double kShooterSpeedDeadband = 250;
 
+    public static final double kShooterSpeedNormal = 3000;
     public static final double kIntakeSpeed = 0.4; //TODO
     public static final double kMidRollerIntakeSpeed = 0.5; //TODO
     public static final double kMidRollerGrabSpeed = -0.03; //TODO
