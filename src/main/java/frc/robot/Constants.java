@@ -123,8 +123,8 @@ public final class Constants {
   }
 
   public static final class AutoConstants {
-    public static final double kMaxSpeedMetersPerSecond = 0.75;
-    public static final double kMaxAccelerationMetersPerSecondSquared = 1;
+    public static final double kMaxSpeedMetersPerSecond = 1;
+    public static final double kMaxAccelerationMetersPerSecondSquared = 2;
     public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
     public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
 
@@ -160,7 +160,7 @@ public final class Constants {
     public static final double kShooterSpeedDeadband = 250;
 
     public static final double kShooterSpeedNormal = 3000;
-    public static final double kIntakeSpeed = 0.4; //TODO
+    public static final double kIntakeSpeed = 0.6; //TODO
     public static final double kMidRollerIntakeSpeed = 0.5; //TODO
     public static final double kMidRollerGrabSpeed = -0.03; //TODO
     public static final double kMidRollerKickSpeed = 0.4; //TODO

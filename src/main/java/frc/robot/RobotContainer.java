@@ -14,6 +14,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
@@ -96,11 +97,12 @@ public class RobotContainer {
     SmartDashboard.putNumber("limelight constant", 25);
     SmartDashboard.putNumber("limelight kp", 0.15);*/
     try {
-        Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve("testcurve.json");
+        Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve("testcurve.wpilib.json");
         test_traj = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
     } catch (IOException ex) {
         test_traj = new Trajectory();
     }
+    SmartDashboard.putString("start", test_traj.getInitialPose().toString());
   }
 
   /**
@@ -162,6 +164,8 @@ public class RobotContainer {
     m_armControllerCommand.rightBumper().onFalse(new InstantCommand(() -> m_ArmSubsystem.stopRoller()));
     m_armControllerCommand.x().onTrue(new InstantCommand(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal)));
     m_armControllerCommand.x().onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopShooterRollers()));
+    m_armControllerCommand.a().onTrue(new InstantCommand(() -> m_ShooterSubsystem.intake()));
+    m_armControllerCommand.a().onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopRollers(false)));
 
   }
     
@@ -187,8 +191,10 @@ public class RobotContainer {
     // // Create config for trajectory
 
     Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
-        List.of(new Pose2d(0, 0, new Rotation2d()), new Pose2d(1.3716, 0, new Rotation2d())),
-        AutoConstants.kTrajectoryConfig);
+        new Pose2d(2.896, 5.553, new Rotation2d(0)),
+        List.of(new Translation2d(1.7784, 6)),
+        new Pose2d(2.896, 6.9, new Rotation2d(0.463647609001)),
+        AutoConstants.kTrajectoryConfigBackwards);
     
     Trajectory exampleTrajectoryBack = TrajectoryGenerator.generateTrajectory(
         List.of(new Pose2d(1.3716, 0, new Rotation2d()), new Pose2d(0, 0, new Rotation2d())),
@@ -257,7 +263,9 @@ public class RobotContainer {
         .andThen(() -> m_ShooterSubsystem.kickNote(false))
         .andThen(new WaitCommand(1))
         .andThen(() -> m_ShooterSubsystem.stopRollers(true));*/
-    return new InstantCommand(() -> {m_ShooterSubsystem.tempSetSpeed(0.45);
+    return new InstantCommand(() -> m_ShooterSubsystem.intake())
+        .andThen(swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive));
+    /*return new InstantCommand(() -> {m_ShooterSubsystem.tempSetSpeed(0.45);
             m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
         }, m_ShooterSubsystem)
         .andThen(new WaitCommand(1))
@@ -267,7 +275,7 @@ public class RobotContainer {
         .andThen(() -> {
             m_ShooterSubsystem.stopShooterRollers();
             m_ShooterSubsystem.intake();
-        });
+        });*/
         //.andThen(swerveControllerCommand.raceWith(new WaitUntilCommand(m_ShooterSubsystem::intakeFallingEdge)));
     //return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive);
     /*return new RunCommand(() -> {
