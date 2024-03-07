@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 
@@ -15,7 +17,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.TrajectoryUtil;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -54,6 +59,7 @@ public class RobotContainer {
   //private final HiArmSubsystem m_hiArm = new HiArmSubsystem();
   //private final LoArmSubsystem m_loArm = new LoArmSubsystem(m_hiArm);
 
+  private Trajectory test_traj;
 
   // The driver's controller
   XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
@@ -89,6 +95,12 @@ public class RobotContainer {
     SmartDashboard.putData("Auto Rot", autorotate);
     SmartDashboard.putNumber("limelight constant", 25);
     SmartDashboard.putNumber("limelight kp", 0.15);*/
+    try {
+        Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve("testcurve.json");
+        test_traj = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
+    } catch (IOException ex) {
+        test_traj = new Trajectory();
+    }
   }
 
   /**
@@ -173,60 +185,28 @@ public class RobotContainer {
     //         5);
 
     // // Create config for trajectory
-    TrajectoryConfig config =
-        new TrajectoryConfig(
-                AutoConstants.kMaxSpeedMetersPerSecond,
-                AutoConstants.kMaxAccelerationMetersPerSecondSquared)
-            .setKinematics(DriveConstants.kDriveKinematics);
-    TrajectoryConfig configBackwards =
-        new TrajectoryConfig(
-                AutoConstants.kMaxSpeedMetersPerSecond,
-                AutoConstants.kMaxAccelerationMetersPerSecondSquared)
-            .setKinematics(DriveConstants.kDriveKinematics)
-            .setReversed(true);
 
-    // // An example trajectory to follow.  All units in meters.
     Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
         List.of(new Pose2d(0, 0, new Rotation2d()), new Pose2d(1.3716, 0, new Rotation2d())),
-        config);
+        AutoConstants.kTrajectoryConfig);
     
     Trajectory exampleTrajectoryBack = TrajectoryGenerator.generateTrajectory(
         List.of(new Pose2d(1.3716, 0, new Rotation2d()), new Pose2d(0, 0, new Rotation2d())),
-        configBackwards);
+        AutoConstants.kTrajectoryConfigBackwards);
 
-    // /*RamseteCommand ramseteCommand =
-    //     new RamseteCommand(
-    //         exampleTrajectory,
-    //         m_robotDrive::getPose,
-    //         new RamseteController(AutoConstants.kRamseteB, AutoConstants.kRamseteZeta),
-    //         new SimpleMotorFeedforward(
-    //             DriveConstants.ksVolts,
-    //             DriveConstants.kvVoltSecondsPerMeter,
-    //             DriveConstants.kaVoltSecondsSquaredPerMeter),
-    //         DriveConstants.kDriveKinematics,
-    //         m_robotDrive::getWheelSpeeds,
-    //         new PIDController(DriveConstants.kPDriveVel, 0, 0),
-    //         new PIDController(DriveConstants.kPDriveVel, 0, 0),
-    //         // RamseteCommand passes volts to the callback
-    //         m_robotDrive::tankDriveVolts,
-    //         m_robotDrive);*/
-    //     RamseteCommand ramseteCommand = 
-    //         new RamseteCommand(exampleTrajectory, m_robotDrive::getPose, new RamseteController(AutoConstants.kRamseteB, AutoConstants.kRamseteZeta), DriveConstants.kDriveKinematics, m_robotDrive::tankMetersPerSecond, m_robotDrive);
+
     m_robotDrive.zeroHeading();
     m_robotDrive.resetOdometry(exampleTrajectory.getInitialPose());
-    // Reset odometry to the starting pose of the trajectory.
-    //m_robotDrive.resetOdometry(exampleTrajectory.getInitialPose()); // for ramsete command
     //SendableChooser<AutoType> type = (SendableChooser) SmartDashboard.getData("Auto Type");
     //SendableChooser<AutoPiece> piece = (SendableChooser) SmartDashboard.getData("Auto Piece");
     //SendableChooser<AutoRotate> rotate = (SendableChooser) SmartDashboard.getData("Auto Rot");
-    ProfiledPIDController thetaController = new ProfiledPIDController(1.25, 0, 0, new TrapezoidProfile.Constraints(2*Math.PI, 2*Math.PI));
-    thetaController.enableContinuousInput(-Math.PI, Math.PI);
+
     SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(exampleTrajectory, 
         m_robotDrive::getPose, 
         Constants.DriveConstants.kDriveKinematics, 
         new PIDController(1, 0, 0), 
         new PIDController(1, 0, 0), 
-        thetaController,
+        getThetaController(),
         /*() -> {
             double angle = -Math.atan((2.0 - m_robotDrive.getPose().getY())/m_robotDrive.getPose().getX());
             if(angle < 0) {
@@ -242,7 +222,7 @@ public class RobotContainer {
         Constants.DriveConstants.kDriveKinematics, 
         new PIDController(1, 0, 0), 
         new PIDController(1, 0, 0), 
-        thetaController,
+        getThetaController(),
         /*() -> {
             double angle = -Math.atan((2.0 - m_robotDrive.getPose().getY())/m_robotDrive.getPose().getX());
             if(angle < 0) {
@@ -289,8 +269,6 @@ public class RobotContainer {
             m_ShooterSubsystem.intake();
         });
         //.andThen(swerveControllerCommand.raceWith(new WaitUntilCommand(m_ShooterSubsystem::intakeFallingEdge)));
-
-//() -> m_robotDrive.drive(0, 0, 0, false, false)
     //return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive);
     /*return new RunCommand(() -> {
         LimelightResults results = LimelightHelpers.getLatestResults("limelight");
@@ -305,59 +283,11 @@ public class RobotContainer {
     }, m_robotDrive);*/
     /*if(type.getSelected().equals(AutoType.Normal)) {
         if(piece.getSelected().equals(AutoPiece.Cube)) {
-            return new InstantCommand(() -> m_hiArm.moveToPosition(185), m_hiArm) //Normal 
-                //.andThen(new WaitUntilCommand(m_hiArm::atPoint))
-                .andThen(new WaitCommand(3))
-                .andThen(() -> m_hiArm.expellCube(), m_hiArm)
-                .andThen(new WaitUntilCommand(m_hiArm::notHaveCube))
-                .andThen(new WaitCommand(1))
-                .andThen(m_hiArm::stopRollers)
-                .andThen(() -> m_hiArm.moveToPosition(0), m_hiArm)
-                .andThen(new WaitUntilCommand(m_hiArm::atPoint))
-                .andThen(new RunCommand(() -> m_robotDrive.drive(-0.3, 0, 0, false, true), m_robotDrive)
-                    .until(() -> m_robotDrive.getPose().minus(new Pose2d(-SmartDashboard.getNumber("Normal Auto Distance", AutoConstants.normalAutoDistance), 0, new Rotation2d(0))).getX() <= 0))
-                .andThen(new RunCommand(() -> m_robotDrive.drive(0, 0, 0, false, true), m_robotDrive));
         }
         else {
             if(rotate.getSelected().equals(AutoRotate.CC)) {
-                /*return new InstantCommand(() -> m_hiArm.moveToPosition(185), m_hiArm) //Normal Cone Counter Clockwise
-                .andThen(() -> m_hiArm.moveRollers(0.5))
-                //.andThen(new WaitUntilCommand(m_hiArm::atPoint))
-                .andThen(new WaitCommand(3))
-                .andThen(() -> m_hiArm.expellCone(), m_hiArm)
-                .andThen(new WaitCommand(1))
-                .andThen(m_hiArm::stopRollers)
-                .andThen(() -> m_hiArm.moveToPosition(0), m_hiArm)
-                .andThen(new WaitUntilCommand(m_hiArm::atPoint))
-                .andThen(new RunCommand(() -> m_robotDrive.drive(-1.2, 0, 0, false, true), m_robotDrive)
-                    .until(() -> m_robotDrive.getPose().minus(new Pose2d(-SmartDashboard.getNumber("Normal Auto Distance", AutoConstants.normalAutoDistance), 0, new Rotation2d(0))).getX() <= 0))
-                .andThen(new RunCommand(() -> m_robotDrive.tankMetersPerSecond(-0.8, 0.8), m_robotDrive)
-                    .until(() -> m_robotDrive.getPose().minus(new Pose2d(0, 0, Rotation2d.fromDegrees(151))).getRotation().getDegrees() >= 0))
-                .andThen(() -> m_hiArm.moveToPosition(140), m_hiArm)
-                .andThen(new RunCommand(() -> m_robotDrive.tankMetersPerSecond(0, 0), m_robotDrive).raceWith(new WaitCommand(0.5)))
-                .andThen(new WaitUntilCommand(m_hiArm::atPoint))
-                .andThen(() -> m_loArm.moveToPosition(105), m_hiArm, m_loArm)
-                .andThen(new WaitUntilCommand(m_loArm::atPoint))
-                .andThen(() -> m_loArm.intakeObj())
-                .andThen(new RunCommand(() -> m_robotDrive.tankMetersPerSecond(1, 1), m_robotDrive)
-                    .raceWith(new WaitCommand(2)))
-                .andThen(() -> m_loArm.stopRollers())
-                .andThen(new RunCommand(() -> m_robotDrive.tankMetersPerSecond(0, 0), m_robotDrive));
-                return new RunCommand(null);
             }
             else if(rotate.getSelected().equals(AutoRotate.None)) {
-                return new InstantCommand(() -> m_hiArm.moveToPosition(185), m_hiArm) //Normal Cone
-                    .andThen(() -> m_hiArm.moveRollers(0.5))
-                    .andThen(new WaitCommand(3))
-                    //.andThen(new WaitUntilCommand(m_hiArm::atPoint))
-                    .andThen(() -> m_hiArm.expellCone(), m_hiArm)
-                    .andThen(new WaitCommand(1))
-                    .andThen(m_hiArm::stopRollers)
-                    .andThen(() -> m_hiArm.moveToPosition(0), m_hiArm)
-                    .andThen(new WaitUntilCommand(m_hiArm::atPoint))
-                    .andThen(new RunCommand(() -> m_robotDrive.drive(-0.3, 0, 0, false, true), m_robotDrive)
-                        .until(() -> m_robotDrive.getPose().minus(new Pose2d(-SmartDashboard.getNumber("Normal Auto Distance", AutoConstants.normalAutoDistance), 0, new Rotation2d(0))).getX() <= 0))
-                    .andThen(new RunCommand(() -> m_robotDrive.drive(0, 0, 0, false, true), m_robotDrive));
             }
             else {
                 return new RunCommand(null);
@@ -369,40 +299,9 @@ public class RobotContainer {
     //}
     /*else {
         if(piece.getSelected().equals(AutoPiece.Cube)) {
-            return new InstantCommand(() -> m_hiArm.moveToPosition(185), m_hiArm) //Balencing Cube
-                .andThen(new WaitUntilCommand(m_hiArm::atPoint))
-                .andThen(() -> m_hiArm.moveRollers(0.4), m_hiArm)
-                .andThen(new WaitUntilCommand(m_hiArm::notHaveCube))
-                .andThen(new WaitCommand(0.5))
-                .andThen(m_hiArm::stopRollers)
-                .andThen(() -> m_hiArm.moveToPosition(0), m_hiArm)
-                //.andThen(new WaitUntilCommand(m_hiArm::atPoint))
-                //.andThen(new RunCommand(() -> m_robotDrive.tankMetersPerSecond(-1.5, -1.5), m_robotDrive)
-                    //.until(() -> m_robotDrive.getPose().minus(new Pose2d(-SmartDashboard.getNumber("Balencing Auto Distance", AutoConstants.balenceAutoDistance), 0, new Rotation2d(0))).getX() <= 0))
-                .andThen(new ParallelRaceGroup(new RunCommand(() -> m_robotDrive.tankMetersPerSecond(-1.2, -1.2), m_robotDrive), new WaitUntilCommand(m_robotDrive::onChargingStation)))
-                .andThen(new ParallelRaceGroup(new RunCommand(() -> m_robotDrive.tankMetersPerSecond(-0.8, -0.8), m_robotDrive), new WaitCommand(1)))
-                .andThen(new ParallelRaceGroup(new RunCommand(() -> m_robotDrive.tankMetersPerSecond(-0.3, -0.3), m_robotDrive), new WaitUntilCommand(m_robotDrive::balenced)))
-                .andThen(new ParallelRaceGroup(new RunCommand(() -> m_robotDrive.tankMetersPerSecond(0.15, 0.15), m_robotDrive), new WaitCommand(0.5)))
-                .andThen(new ParallelRaceGroup(new RunCommand(() -> m_robotDrive.tankMetersPerSecond(0.2, 0.2), m_robotDrive), new WaitUntilCommand(m_robotDrive::balenced)))
-                .andThen(new RunCommand(() -> m_robotDrive.tankMetersPerSecond(0, 0), m_robotDrive));
         }
         else {
             return new InstantCommand(() -> m_hiArm.moveToPosition(185), m_hiArm) //Balencing Cone
-                .andThen(() -> m_hiArm.moveRollers(0.6))
-                .andThen(new WaitUntilCommand(m_hiArm::atPoint))
-                .andThen(() -> m_hiArm.moveRollers(-0.4), m_hiArm)
-                .andThen(new WaitCommand(1))
-                .andThen(m_hiArm::stopRollers)
-                .andThen(() -> m_hiArm.moveToPosition(0), m_hiArm)
-                //.andThen(new WaitUntilCommand(m_hiArm::atPoint))
-                //.andThen(new RunCommand(() -> m_robotDrive.tankMetersPerSecond(-0.6, -0.6), m_robotDrive)
-                    //.until(() -> m_robotDrive.getPose().minus(new Pose2d(-SmartDashboard.getNumber("Balencing Auto Distance", AutoConstants.balenceAutoDistance), 0, new Rotation2d(0))).getX() <= 0))
-                .andThen(new ParallelRaceGroup(new RunCommand(() -> m_robotDrive.tankMetersPerSecond(-1.2, -1.2), m_robotDrive), new WaitUntilCommand(m_robotDrive::onChargingStation)))
-                .andThen(new ParallelRaceGroup(new RunCommand(() -> m_robotDrive.tankMetersPerSecond(-0.8, -0.8), m_robotDrive), new WaitCommand(1)))
-                .andThen(new ParallelRaceGroup(new RunCommand(() -> m_robotDrive.tankMetersPerSecond(-0.3, -0.3), m_robotDrive), new WaitUntilCommand(m_robotDrive::balenced)))
-                .andThen(new ParallelRaceGroup(new RunCommand(() -> m_robotDrive.tankMetersPerSecond(0.15, 0.15), m_robotDrive), new WaitCommand(0.5)))
-                .andThen(new ParallelRaceGroup(new RunCommand(() -> m_robotDrive.tankMetersPerSecond(0.2, 0.2), m_robotDrive), new WaitUntilCommand(m_robotDrive::balenced)))
-                .andThen(new RunCommand(() -> m_robotDrive.tankMetersPerSecond(0, 0), m_robotDrive));
         }
     }*/
     
@@ -480,6 +379,12 @@ public class RobotContainer {
     }
     public double testHeading() {
         return 5;
+    }
+
+    public ProfiledPIDController getThetaController() {
+        ProfiledPIDController thetaController = new ProfiledPIDController(1.25, 0, 0, new TrapezoidProfile.Constraints(2*Math.PI, 2*Math.PI));
+        thetaController.enableContinuousInput(-Math.PI, Math.PI);
+        return thetaController;
     }
 }
 
