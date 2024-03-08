@@ -239,6 +239,9 @@ public class RobotContainer {
         },*/
         m_robotDrive::setModuleStates,
         m_robotDrive);
+    Command moveBack = new InstantCommand();
+    Command thirdNotePath = new InstantCommand();
+    Command fourthNotePath = new InstantCommand();
     //return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive);
     /*return new InstantCommand(() -> {m_ShooterSubsystem.tempSetSpeed(0.45);
             m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
@@ -263,8 +266,21 @@ public class RobotContainer {
         .andThen(() -> m_ShooterSubsystem.kickNote(false))
         .andThen(new WaitCommand(1))
         .andThen(() -> m_ShooterSubsystem.stopRollers(true));*/
-    return new InstantCommand(() -> m_ShooterSubsystem.intake())
-        .andThen(swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive));
+    //return new InstantCommand(() -> m_ShooterSubsystem.intake())
+        //.andThen(swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive));
+    return new InstantCommand(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal))
+        .andThen(new WaitCommand(0.5))
+        .andThen(new InstantCommand(() -> m_ShooterSubsystem.kickNote(false)))
+        .andThen(new ParallelCommandGroup(moveBack.andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive), 
+            new WaitUntilCommand(() -> !m_ShooterSubsystem.hasNote()).andThen(new WaitCommand(0.5)).andThen(() -> {
+                m_ShooterSubsystem.stopRollers(true);
+                m_ShooterSubsystem.intake();
+            })))
+        .andThen(new WaitUntilCommand(() -> m_ShooterSubsystem.holdingNote == true))
+        .andThen(new WaitCommand(1))
+        .andThen(new InstantCommand(() -> m_ShooterSubsystem.stopRollers(false)));
+        
+        
     /*return new InstantCommand(() -> {m_ShooterSubsystem.tempSetSpeed(0.45);
             m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
         }, m_ShooterSubsystem)
