@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -41,6 +42,7 @@ import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.LimelightHelpers.LimelightResults;
 import frc.robot.commands.DefaultDriveCommand;
+import frc.robot.commands.ShootWhileMovingCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -75,7 +77,7 @@ public class RobotContainer {
     // Configure default commands
     // Set the default drive command to split-stick arcade drive
     m_robotDrive.setDefaultCommand(new DefaultDriveCommand(m_robotDrive));
-
+    m_ShooterSubsystem.setDefaultCommand(new ShootWhileMovingCommand(m_ShooterSubsystem, m_robotDrive));
     /*SendableChooser<AutoType> autoType = new SendableChooser<AutoType>();
     autoType.addOption("Normal", AutoType.Normal);
     autoType.addOption("Balence", AutoType.Balence);
@@ -176,7 +178,7 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    m_ShooterSubsystem.holdingNote = false;
+    m_ShooterSubsystem.holdingNote = true;
     //return new InstantCommand();
     // Create a voltage constraint to ensure we don't accelerate too fast
     // var autoVoltageConstraint =
@@ -191,10 +193,10 @@ public class RobotContainer {
     // // Create config for trajectory
 
     Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
+        new Pose2d(1.3269, 5.553, new Rotation2d(0)),
+        List.of(),
         new Pose2d(2.896, 5.553, new Rotation2d(0)),
-        List.of(new Translation2d(1.7784, 6)),
-        new Pose2d(2.896, 6.9, new Rotation2d(0.463647609001)),
-        AutoConstants.kTrajectoryConfigBackwards);
+        AutoConstants.kTrajectoryConfig);
     
     Trajectory exampleTrajectoryBack = TrajectoryGenerator.generateTrajectory(
         List.of(new Pose2d(1.3716, 0, new Rotation2d()), new Pose2d(0, 0, new Rotation2d())),
@@ -266,9 +268,25 @@ public class RobotContainer {
         .andThen(() -> m_ShooterSubsystem.kickNote(false))
         .andThen(new WaitCommand(1))
         .andThen(() -> m_ShooterSubsystem.stopRollers(true));*/
-    //return new InstantCommand(() -> m_ShooterSubsystem.intake())
-        //.andThen(swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive));
     return new InstantCommand(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal))
+        .andThen(new WaitUntilCommand(m_ShooterSubsystem::atSpeed))
+        .andThen(() -> m_ShooterSubsystem.kickNote(false))
+        .andThen(new WaitUntilCommand(() -> !m_ShooterSubsystem.holdingNote))
+        .andThen(new WaitCommand(0.25))
+        .andThen(() -> m_ShooterSubsystem.stopRollers(true))
+        .andThen(() -> m_ShooterSubsystem.setShooterVelocity(0))
+        .andThen(() -> m_ShooterSubsystem.intake())
+        .andThen(swerveControllerCommand)
+        .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
+        .andThen(() -> {
+            m_ShooterSubsystem.stopRollers(false);
+            m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
+            })
+        .andThen(new WaitCommand(0.5))
+        .andThen(new ParallelRaceGroup(thirdNotePath(), new ShootWhileMovingCommand(m_ShooterSubsystem, m_robotDrive)))
+        .andThen(() -> m_ShooterSubsystem.stopRollers(true))
+        .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive);
+    /*return new InstantCommand(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal))
         .andThen(new WaitCommand(0.5))
         .andThen(new InstantCommand(() -> m_ShooterSubsystem.kickNote(false)))
         .andThen(new ParallelCommandGroup(moveBack.andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive), 
@@ -278,7 +296,7 @@ public class RobotContainer {
             })))
         .andThen(new WaitUntilCommand(() -> m_ShooterSubsystem.holdingNote == true))
         .andThen(new WaitCommand(1))
-        .andThen(new InstantCommand(() -> m_ShooterSubsystem.stopRollers(false)));
+        .andThen(new InstantCommand(() -> m_ShooterSubsystem.stopRollers(false)));*/
         
         
     /*return new InstantCommand(() -> {m_ShooterSubsystem.tempSetSpeed(0.45);
@@ -409,6 +427,37 @@ public class RobotContainer {
         ProfiledPIDController thetaController = new ProfiledPIDController(1.25, 0, 0, new TrapezoidProfile.Constraints(2*Math.PI, 2*Math.PI));
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
         return thetaController;
+    }
+
+    private Command thirdNotePath() {
+        Trajectory traj = TrajectoryGenerator.generateTrajectory(
+            /*new Pose2d(2.896, 5.553, new Rotation2d(0))*/m_robotDrive.getPose(),
+            List.of(new Translation2d(1.7784, 6)),
+            new Pose2d(2.896, 7, new Rotation2d(-Math.PI + 0.463647609001)),
+            AutoConstants.kTrajectoryConfigBackwards);
+        SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(traj, 
+        m_robotDrive::getPose, 
+        Constants.DriveConstants.kDriveKinematics, 
+        new PIDController(1, 0, 0), 
+        new PIDController(1, 0, 0), 
+        getThetaController(),
+        this::autoPathAngle,
+        m_robotDrive::setModuleStates,
+        m_robotDrive);
+        return swerveControllerCommand;
+    }
+
+    private Rotation2d autoPathAngle() {
+        if(m_ShooterSubsystem.holdingNote) {
+            double angle = -Math.atan((5.553 - m_robotDrive.getPose().getY())/(m_robotDrive.getPose().getX()));
+            /*if(angle < 0) {
+                angle = Math.PI + angle;
+            }*/
+            return Rotation2d.fromRadians(angle);
+        }
+        else {
+            return new Rotation2d(0.6);
+        }
     }
 }
 
