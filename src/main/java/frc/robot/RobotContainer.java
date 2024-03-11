@@ -284,12 +284,12 @@ public class RobotContainer {
             m_ShooterSubsystem.stopRollers(false);
             m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
             })
-        .andThen(new WaitCommand(0.5))
-        .andThen(new ParallelRaceGroup(thirdNotePath(), shootWhileCommand))
+        //.andThen(new WaitCommand(0.5))
+        .andThen(new ParallelCommandGroup(thirdNotePath(), new WaitCommand(0.25).andThen(() -> m_ShooterSubsystem.speedUp(2500)).andThen(shootWhileCommand).andThen(new WaitCommand(0.25)).andThen(() -> m_ShooterSubsystem.setShooterVelocity(0)).andThen(() -> m_ShooterSubsystem.intake())))
         .andThen(() -> m_ShooterSubsystem.stopRollers(false))
         .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
         .andThen(() -> m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed))
-        .andThen(new ParallelCommandGroup(fourthNothPath(), new WaitCommand(0.5).andThen(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal + 250))))
+        .andThen(new ParallelCommandGroup(fourthNothPath(), new WaitCommand(0.25).andThen(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal + 250))))
         .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
         .andThen(() -> m_ShooterSubsystem.kickNote(false));
 
@@ -458,7 +458,7 @@ public class RobotContainer {
         Trajectory traj = TrajectoryGenerator.generateTrajectory(
             new Pose2d(/*2.896*/2.8, 7.2, new Rotation2d(0.3)),
             List.of(),
-            new Pose2d(/*2.896*/1.2, 5.553, new Rotation2d(0)),
+            new Pose2d(/*2.896*/1.2, 5.553, new Rotation2d(Math.PI/2)),
             AutoConstants.kTrajectoryConfigBackwards);
         SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(traj, 
         m_robotDrive::getPose, 
@@ -466,6 +466,7 @@ public class RobotContainer {
         new PIDController(1, 0, 0), 
         new PIDController(1, 0, 0), 
         getThetaController(),
+        () -> new Rotation2d(0),
         m_robotDrive::setModuleStates,
         m_robotDrive);
         return swerveControllerCommand;

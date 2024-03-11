@@ -23,7 +23,7 @@ public class ShootWhileMovingCommand extends Command {
 
     @Override
     public void initialize() {
-        m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal + 750);
+        m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal + 500);
         //m_ShooterSubsystem.intake();
     }
 
@@ -38,17 +38,17 @@ public class ShootWhileMovingCommand extends Command {
                 m_ShooterSubsystem.setIntakeRollers(ShooterConstants.kIntakeSpeed);
             }
         }
-        else {
+        /*else {
             if(!m_ShooterSubsystem.holdingNote) {
                 m_ShooterSubsystem.setShooterVelocity(0);
                 m_ShooterSubsystem.intake();
             }
-        }
+        }*/
     }
 
     @Override
     public boolean isFinished() {
-        return false;
+        return atPlace;
     }
     
 }
