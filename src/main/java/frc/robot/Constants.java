@@ -159,7 +159,7 @@ public final class Constants {
 
     public static final double kShooterSpeedDeadband = 250;
 
-    public static final double kShooterSpeedNormal = 3000;
+    public static final double kShooterSpeedNormal = 2000;
     public static final double kIntakeSpeed = 0.6; //TODO
     public static final double kMidRollerIntakeSpeed = 0.5; //TODO
     public static final double kMidRollerGrabSpeed = -0.03; //TODO

@@ -63,6 +63,7 @@ public class RobotContainer {
   //private final LoArmSubsystem m_loArm = new LoArmSubsystem(m_hiArm);
 
   private Trajectory test_traj;
+  private ShootWhileMovingCommand shootWhileCommand;
 
   // The driver's controller
   XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
@@ -77,7 +78,7 @@ public class RobotContainer {
     // Configure default commands
     // Set the default drive command to split-stick arcade drive
     m_robotDrive.setDefaultCommand(new DefaultDriveCommand(m_robotDrive));
-    m_ShooterSubsystem.setDefaultCommand(new ShootWhileMovingCommand(m_ShooterSubsystem, m_robotDrive));
+    //m_ShooterSubsystem.setDefaultCommand(new ShootWhileMovingCommand(m_ShooterSubsystem, m_robotDrive));
     /*SendableChooser<AutoType> autoType = new SendableChooser<AutoType>();
     autoType.addOption("Normal", AutoType.Normal);
     autoType.addOption("Balence", AutoType.Balence);
@@ -195,7 +196,7 @@ public class RobotContainer {
     Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
         new Pose2d(1.3269, 5.553, new Rotation2d(0)),
         List.of(),
-        new Pose2d(2.896, 5.553, new Rotation2d(0)),
+        new Pose2d(2.8, 5.553, new Rotation2d(0)),
         AutoConstants.kTrajectoryConfig);
     
     Trajectory exampleTrajectoryBack = TrajectoryGenerator.generateTrajectory(
@@ -244,6 +245,7 @@ public class RobotContainer {
     Command moveBack = new InstantCommand();
     Command thirdNotePath = new InstantCommand();
     Command fourthNotePath = new InstantCommand();
+    shootWhileCommand = new ShootWhileMovingCommand(m_ShooterSubsystem, m_robotDrive);
     //return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive);
     /*return new InstantCommand(() -> {m_ShooterSubsystem.tempSetSpeed(0.45);
             m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
@@ -283,9 +285,14 @@ public class RobotContainer {
             m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
             })
         .andThen(new WaitCommand(0.5))
-        .andThen(new ParallelRaceGroup(thirdNotePath(), new ShootWhileMovingCommand(m_ShooterSubsystem, m_robotDrive)))
-        .andThen(() -> m_ShooterSubsystem.stopRollers(true))
-        .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive);
+        .andThen(new ParallelRaceGroup(thirdNotePath(), shootWhileCommand))
+        .andThen(() -> m_ShooterSubsystem.stopRollers(false))
+        .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
+        .andThen(() -> m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed))
+        .andThen(new ParallelCommandGroup(fourthNothPath(), new WaitCommand(0.5).andThen(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal + 250))))
+        .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
+        .andThen(() -> m_ShooterSubsystem.kickNote(false));
+
     /*return new InstantCommand(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal))
         .andThen(new WaitCommand(0.5))
         .andThen(new InstantCommand(() -> m_ShooterSubsystem.kickNote(false)))
@@ -431,9 +438,9 @@ public class RobotContainer {
 
     private Command thirdNotePath() {
         Trajectory traj = TrajectoryGenerator.generateTrajectory(
-            /*new Pose2d(2.896, 5.553, new Rotation2d(0))*/m_robotDrive.getPose(),
-            List.of(new Translation2d(1.7784, 6)),
-            new Pose2d(2.896, 7, new Rotation2d(-Math.PI + 0.463647609001)),
+            new Pose2d(2.8, 5.553, new Rotation2d(0)),
+            List.of(new Translation2d(1.3269, 5.553), new Translation2d(1.6269, 6.6)),
+            new Pose2d(/*2.896*/2.8, 7.2, new Rotation2d(-Math.PI + 0.463647609001)),
             AutoConstants.kTrajectoryConfigBackwards);
         SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(traj, 
         m_robotDrive::getPose, 
@@ -447,16 +454,33 @@ public class RobotContainer {
         return swerveControllerCommand;
     }
 
+    private Command fourthNothPath() {
+        Trajectory traj = TrajectoryGenerator.generateTrajectory(
+            new Pose2d(/*2.896*/2.8, 7.2, new Rotation2d(0.3)),
+            List.of(),
+            new Pose2d(/*2.896*/1.2, 5.553, new Rotation2d(0)),
+            AutoConstants.kTrajectoryConfigBackwards);
+        SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(traj, 
+        m_robotDrive::getPose, 
+        Constants.DriveConstants.kDriveKinematics, 
+        new PIDController(1, 0, 0), 
+        new PIDController(1, 0, 0), 
+        getThetaController(),
+        m_robotDrive::setModuleStates,
+        m_robotDrive);
+        return swerveControllerCommand;
+    }
+
     private Rotation2d autoPathAngle() {
-        if(m_ShooterSubsystem.holdingNote) {
-            double angle = -Math.atan((5.553 - m_robotDrive.getPose().getY())/(m_robotDrive.getPose().getX()));
+        if(!shootWhileCommand.atPlace) {
+            //double angle = -Math.atan((5.553 - m_robotDrive.getPose().getY())/(m_robotDrive.getPose().getX()));
             /*if(angle < 0) {
                 angle = Math.PI + angle;
             }*/
-            return Rotation2d.fromRadians(angle);
+            return Rotation2d.fromRadians(0);
         }
         else {
-            return new Rotation2d(0.6);
+            return new Rotation2d(0.3);
         }
     }
 }
