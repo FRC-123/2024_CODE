@@ -14,6 +14,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
@@ -69,7 +70,7 @@ public class RobotContainer {
   //private final LoArmSubsystem m_loArm = new LoArmSubsystem(m_hiArm);
 
   //private Trajectory test_traj;
-  private ShootWhileMovingCommand shootWhileCommand;
+  private boolean atPlace;
 
   // The driver's controller
   XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
@@ -221,7 +222,7 @@ public class RobotContainer {
     Command moveBack = new InstantCommand();
     Command thirdNotePath = new InstantCommand();
     Command fourthNotePath = new InstantCommand();
-    shootWhileCommand = new ShootWhileMovingCommand(m_ShooterSubsystem, m_robotDrive);
+    //shootWhileCommand = new ShootWhileMovingCommand(m_ShooterSubsystem, m_robotDrive);
     //return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive);
     /*return new InstantCommand(() -> {m_ShooterSubsystem.tempSetSpeed(0.45);
             m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
@@ -259,9 +260,21 @@ public class RobotContainer {
         .andThen(() -> {
             m_ShooterSubsystem.stopRollers(false);
             m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
+            atPlace = false;
             })
         //.andThen(new WaitCommand(0.5))
-        .andThen(new ParallelCommandGroup(thirdNotePath(), new WaitCommand(0.25).andThen(() -> m_ShooterSubsystem.speedUp(2500)).andThen(shootWhileCommand).andThen(new WaitCommand(0.25)).andThen(() -> m_ShooterSubsystem.setShooterVelocity(0)).andThen(() -> m_ShooterSubsystem.intake())))
+        .andThen(new ParallelCommandGroup(thirdNotePath(), new WaitCommand(0.25)
+            .andThen(() -> m_ShooterSubsystem.speedUp(2500))
+            .andThen(new WaitUntilCommand(this::atPlace))
+            .andThen(() -> {
+                m_ShooterSubsystem.kickNote(false);
+                m_ShooterSubsystem.setIntakeRollers(ShooterConstants.kIntakeSpeed);
+            })
+            .andThen(new WaitCommand(0.25))
+            .andThen(() -> m_ShooterSubsystem.setShooterVelocity(0))
+            .andThen(() -> m_ShooterSubsystem.intake())
+        ))
+        //.andThen(new ParallelCommandGroup(thirdNotePath(), new WaitCommand(0.25).andThen(() -> m_ShooterSubsystem.speedUp(2500)).andThen(shootWhileCommand).andThen(new WaitCommand(0.25)).andThen(() -> m_ShooterSubsystem.setShooterVelocity(0)).andThen(() -> m_ShooterSubsystem.intake())))
         .andThen(() -> m_ShooterSubsystem.stopRollers(false))
         .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
         .andThen(() -> m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed))
@@ -449,7 +462,7 @@ public class RobotContainer {
     }
 
     private Rotation2d autoPathAngle() {
-        if(!shootWhileCommand.atPlace) {
+        if(!atPlace) {
             //double angle = -Math.atan((5.553 - m_robotDrive.getPose().getY())/(m_robotDrive.getPose().getX()));
             /*if(angle < 0) {
                 angle = Math.PI + angle;
@@ -459,6 +472,12 @@ public class RobotContainer {
         else {
             return new Rotation2d(0.3);
         }
+    }
+
+    private boolean atPlace() {
+        Transform2d diff = m_robotDrive.getPose().minus(new Pose2d(1.3269, 5.553, new Rotation2d(0)));
+        SmartDashboard.putString("diff", diff.toString());
+        return (Math.abs(diff.getX()) < 0.3 && Math.abs(diff.getY()) < 1);
     }
 }
 
