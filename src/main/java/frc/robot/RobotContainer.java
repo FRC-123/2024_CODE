@@ -105,6 +105,9 @@ public class RobotContainer {
   private void configureButtonBindings() {
     new JoystickButton(m_driverController, Button.kY.value)
         .whileTrue(new RunCommand(() -> m_robotDrive.setX(), m_robotDrive));
+    
+    new JoystickButton(m_driverController, Button.kStart.value)
+        .onTrue(new InstantCommand(() -> m_robotDrive.zeroHeading(), m_robotDrive));
 
     new Trigger(this::R1Up)
         .onTrue(new InstantCommand(() -> m_ArmSubsystem.setState(ArmState.kUp)))
@@ -119,11 +122,11 @@ public class RobotContainer {
         .onTrue(new InstantCommand(() -> m_ArmSubsystem.intakeNote()))
         .onFalse(new InstantCommand(() -> m_ArmSubsystem.stopRoller()));
 
-    new Trigger(this::L1Up)
+    /*new Trigger(this::L1Up)
         .onTrue(new InstantCommand(() -> m_WinchSubsystem.setWinchPosition(300)))
         .onFalse(new InstantCommand(() -> m_WinchSubsystem.setWinchPosition(0)));
     new Trigger(this::L1Down)
-        .onTrue(new InstantCommand(() -> m_WinchSubsystem.setWinchPosition(0)));
+        .onTrue(new InstantCommand(() -> m_WinchSubsystem.setWinchPosition(0)));*/
 
     m_armControllerCommand.a().whileTrue(new StartEndCommand(() -> m_ShooterSubsystem.intake(), () -> m_ShooterSubsystem.stopRollers(false), m_ShooterSubsystem));
     m_armControllerCommand.y().whileTrue(new ShootCommand(m_ShooterSubsystem));

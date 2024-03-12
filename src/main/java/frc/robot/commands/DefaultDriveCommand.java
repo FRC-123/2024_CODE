@@ -20,17 +20,6 @@ public class DefaultDriveCommand extends Command {
 
     @Override
     public void execute() {
-        if(m_drivController.getAButton()) {
-            LimelightResults results = LimelightHelpers.getLatestResults("limelight");
-            if(results.targetingResults.targets_Fiducials.length > 0 && (results.targetingResults.targets_Fiducials[0].fiducialID == 7 || results.targetingResults.targets_Fiducials[0].fiducialID == 4)) {
-                double angle = Math.atan(results.targetingResults.targets_Fiducials[0].getTargetPose_CameraSpace().getX()/results.targetingResults.targets_Fiducials[0].getTargetPose_CameraSpace().getZ());
-                SmartDashboard.putNumber("angle", angle);
-                driveSubsystem.drive(0, 0, Math.pow(angle/-2.0, 11/5), false, true);
-            }
-            else {
-                driveSubsystem.drive(0, 0, 0, false, true);
-            }
-        }
         int fineTurn = 0;
         if(m_drivController.getXButton()) {
             fineTurn += 1;
@@ -40,9 +29,27 @@ public class DefaultDriveCommand extends Command {
         }
         double multiplier = 0.4;
         double povmultiplier = 0.5;
-        if((m_drivController.getLeftTriggerAxis() > 0.75) || (m_drivController.getRightTriggerAxis() > 0.75)) {
+        if((m_drivController.getLeftTriggerAxis() > 0.75) && (m_drivController.getRightTriggerAxis() > 0.75)) {
+            multiplier = 1; //Turbo
+            povmultiplier = 1.5; //POV Turbo
+        }
+        else if((m_drivController.getLeftTriggerAxis() > 0.75) || (m_drivController.getRightTriggerAxis() > 0.75)) {
             multiplier = 0.65; //Turbo
             povmultiplier = 1; //POV Turbo
+        }
+        if(m_drivController.getAButton()) {
+            LimelightResults results = LimelightHelpers.getLatestResults("limelight");
+            if(results.targetingResults.targets_Fiducials.length > 0 && (results.targetingResults.targets_Fiducials[0].fiducialID == 7 || results.targetingResults.targets_Fiducials[0].fiducialID == 4)) {
+                double angle = Math.atan(results.targetingResults.targets_Fiducials[0].getTargetPose_CameraSpace().getX()/results.targetingResults.targets_Fiducials[0].getTargetPose_CameraSpace().getZ());
+                SmartDashboard.putNumber("angle", angle);
+                if(Math.abs(angle) > 0.2) {
+                    driveSubsystem.drive(-multiplier*MathUtil.applyDeadband(m_drivController.getLeftY(), 0.015), -multiplier*MathUtil.applyDeadband(m_drivController.getLeftX(), 0.015), angle/-2.5, false, true);
+                }
+                else {
+                    driveSubsystem.drive(-multiplier*MathUtil.applyDeadband(m_drivController.getLeftY(), 0.015), -multiplier*MathUtil.applyDeadband(m_drivController.getLeftX(), 0.015), 0, false, true);
+                }
+                return;
+            }
         }
         if(m_drivController.getPOV() == -1) {
             if(fineTurn == 0) {

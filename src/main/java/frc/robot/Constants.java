@@ -170,14 +170,9 @@ public final class Constants {
   public static final class WinchConstants {
     public static final int kWinchCanId = 14;
 
-    public static final double kWinchP = 0.04; //TODO
-    public static final double kWinchI = 0; //TODO
-    public static final double kWinchD = 0; //TODO
-    public static final double kWinchFF = 0; //TODO
-    public static final double kWinchMinOutput = -1; //TODO
-    public static final double kWinchMaxOutput = 1; //TODO
-
-    public static final double kPositionDeadband = 5; //TODO
+    public static final double kTopPosition = -200; //-240
+    public static final double kIdlePosition = -90; //-90
+    public static final double kSpeed = -1;
   }
 
   public static final class ArmConstants {
@@ -187,7 +182,7 @@ public final class Constants {
     public static final int kEncoderDIO = 5;
 
     public static final double kDownSpeed = 1;
-    public static final double kUpSpeed = -0.75;
+    public static final double kUpSpeed = -1;
     public static final double kIntakeSpeed = 0.3;
     public static final double kExpellSpeed = -0.35;
     public static final double kHoldSpeed = 0.05;

@@ -48,9 +48,7 @@ public class Robot extends TimedRobot {
     m_robotContainer = new RobotContainer();
     LimelightHelpers.setPipelineIndex("limelight", 0);
     LimelightHelpers.setLEDMode_PipelineControl("limelight");
-    SmartDashboard.putNumber("intake", 0.3);
-    SmartDashboard.putNumber("mid", 0.05);
-    SmartDashboard.putNumber("shoot", 1);
+    LimelightHelpers.getLatestResults("limelight");
     //CameraServer.startAutomaticCapture();
     /*midmain.setIdleMode(IdleMode.kBrake);
     midfollow.setIdleMode(IdleMode.kBrake);
