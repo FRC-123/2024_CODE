@@ -4,9 +4,6 @@
 
 package frc.robot;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.time.Instant;
 import java.util.List;
 
 import edu.wpi.first.math.MathUtil;
@@ -17,21 +14,15 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
-import edu.wpi.first.math.trajectory.TrajectoryUtil;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
@@ -41,13 +32,10 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.AutoConstants;
-import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.ShooterConstants;
-import frc.robot.LimelightHelpers.LimelightResults;
 import frc.robot.commands.DefaultDriveCommand;
 import frc.robot.commands.ShootCommand;
-import frc.robot.commands.ShootWhileMovingCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -72,6 +60,8 @@ public class RobotContainer {
   //private Trajectory test_traj;
   private boolean atPlace;
 
+  Pose2d centerNotePoint = new Pose2d(2.8, 5.553, new Rotation2d(0));
+
   // The driver's controller
   XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
   XboxController m_armController = new XboxController(OIConstants.kArmControllerPort);
@@ -86,26 +76,17 @@ public class RobotContainer {
     // Set the default drive command to split-stick arcade drive
     m_robotDrive.setDefaultCommand(new DefaultDriveCommand(m_robotDrive));
     //m_ShooterSubsystem.setDefaultCommand(new ShootWhileMovingCommand(m_ShooterSubsystem, m_robotDrive));
-    /*SendableChooser<AutoType> autoType = new SendableChooser<AutoType>();
-    autoType.addOption("Normal", AutoType.Normal);
-    autoType.addOption("Balence", AutoType.Balence);
-    autoType.setDefaultOption("Normal", AutoType.Normal);
-    SendableChooser<AutoPiece> autoPiece = new SendableChooser<AutoPiece>();
-    autoPiece.addOption("Cone", AutoPiece.Cone);
-    autoPiece.addOption("Cube", AutoPiece.Cube);
-    autoPiece.setDefaultOption("Cube", AutoPiece.Cube);
-    SendableChooser<AutoRotate> autorotate = new SendableChooser<AutoRotate>();
-    autorotate.addOption("Clockwise", AutoRotate.C);
-    autorotate.addOption("Counter Clockwise", AutoRotate.CC);
-    autorotate.addOption("None", AutoRotate.None);
-    autorotate.setDefaultOption("None", AutoRotate.None);
-    SmartDashboard.putNumber("Normal Auto Distance", AutoConstants.normalAutoDistance);
-    SmartDashboard.putNumber("Balencing Auto Distance", AutoConstants.balenceAutoDistance);
+    SendableChooser<AutoType> autoType = new SendableChooser<AutoType>();
+    autoType.addOption("One Piece", AutoType.One_Piece);
+    autoType.addOption("Two Piece", AutoType.Two_Piece);
+    autoType.setDefaultOption("Three Piece", AutoType.Three_Piece);
+    SendableChooser<AutoAngle> autoAngle = new SendableChooser<AutoAngle>();
+    autoAngle.addOption("Left", AutoAngle.Left);
+    autoAngle.setDefaultOption("Right", AutoAngle.Right);
     SmartDashboard.putData("Auto Type", autoType);
-    SmartDashboard.putData("Auto Piece", autoPiece);
-    SmartDashboard.putData("Auto Rot", autorotate);
-    SmartDashboard.putNumber("limelight constant", 25);
-    SmartDashboard.putNumber("limelight kp", 0.15);*/
+    SmartDashboard.putData("Auto Angle", autoAngle);
+    //SmartDashboard.putNumber("limelight constant", 25);
+    //SmartDashboard.putNumber("limelight kp", 0.15);
     /*try {
         Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve("testcurve.wpilib.json");
         test_traj = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
@@ -122,7 +103,7 @@ public class RobotContainer {
    * {@link JoystickButton}.
    */
   private void configureButtonBindings() {
-    new JoystickButton(m_driverController, Button.kA.value)
+    new JoystickButton(m_driverController, Button.kY.value)
         .whileTrue(new RunCommand(() -> m_robotDrive.setX(), m_robotDrive));
 
     new Trigger(this::R1Up)
@@ -169,25 +150,28 @@ public class RobotContainer {
     //         5);
 
     // // Create config for trajectory
-
-    Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
+    
+    Trajectory moveBackTraj = TrajectoryGenerator.generateTrajectory(
         new Pose2d(1.3269, 5.553, new Rotation2d(0)),
         List.of(),
-        new Pose2d(2.8, 5.553, new Rotation2d(0)),
+        centerNotePoint,
         AutoConstants.kTrajectoryConfig);
     
-    Trajectory exampleTrajectoryBack = TrajectoryGenerator.generateTrajectory(
-        List.of(new Pose2d(1.3716, 0, new Rotation2d()), new Pose2d(0, 0, new Rotation2d())),
+    Trajectory moveToSpeakerTraj = TrajectoryGenerator.generateTrajectory(
+        centerNotePoint,
+        List.of(),
+        new Pose2d(1.3269, 5.553, new Rotation2d(0)),
         AutoConstants.kTrajectoryConfigBackwards);
 
-
     m_robotDrive.zeroHeading();
-    m_robotDrive.resetOdometry(exampleTrajectory.getInitialPose());
-    //SendableChooser<AutoType> type = (SendableChooser) SmartDashboard.getData("Auto Type");
+    m_robotDrive.resetOdometry(moveBackTraj.getInitialPose());
+
+    SendableChooser<AutoType> type = (SendableChooser<AutoType>) SmartDashboard.getData("Auto Type");
+    SendableChooser<AutoAngle> angle = (SendableChooser<AutoAngle>) SmartDashboard.getData("Auto Angle");
     //SendableChooser<AutoPiece> piece = (SendableChooser) SmartDashboard.getData("Auto Piece");
     //SendableChooser<AutoRotate> rotate = (SendableChooser) SmartDashboard.getData("Auto Rot");
 
-    SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(exampleTrajectory, 
+    SwerveControllerCommand moveBackPathCommand = new SwerveControllerCommand(moveBackTraj, 
         m_robotDrive::getPose, 
         Constants.DriveConstants.kDriveKinematics, 
         new PIDController(1, 0, 0), 
@@ -203,7 +187,7 @@ public class RobotContainer {
         },*/
         m_robotDrive::setModuleStates,
         m_robotDrive);
-    SwerveControllerCommand swerveControllerCommandBack =  new SwerveControllerCommand(exampleTrajectoryBack, 
+    SwerveControllerCommand moveToSpeakerCommand =  new SwerveControllerCommand(moveToSpeakerTraj, 
         m_robotDrive::getPose, 
         Constants.DriveConstants.kDriveKinematics, 
         new PIDController(1, 0, 0), 
@@ -219,9 +203,6 @@ public class RobotContainer {
         },*/
         m_robotDrive::setModuleStates,
         m_robotDrive);
-    Command moveBack = new InstantCommand();
-    Command thirdNotePath = new InstantCommand();
-    Command fourthNotePath = new InstantCommand();
     //shootWhileCommand = new ShootWhileMovingCommand(m_ShooterSubsystem, m_robotDrive);
     //return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive);
     /*return new InstantCommand(() -> {m_ShooterSubsystem.tempSetSpeed(0.45);
@@ -247,41 +228,74 @@ public class RobotContainer {
         .andThen(() -> m_ShooterSubsystem.kickNote(false))
         .andThen(new WaitCommand(1))
         .andThen(() -> m_ShooterSubsystem.stopRollers(true));*/
-    return new InstantCommand(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal))
-        .andThen(new WaitUntilCommand(m_ShooterSubsystem::atSpeed))
-        .andThen(() -> m_ShooterSubsystem.kickNote(false))
-        .andThen(new WaitUntilCommand(() -> !m_ShooterSubsystem.holdingNote))
-        .andThen(new WaitCommand(0.25))
-        .andThen(() -> m_ShooterSubsystem.stopRollers(true))
-        .andThen(() -> m_ShooterSubsystem.setShooterVelocity(0))
-        .andThen(() -> m_ShooterSubsystem.intake())
-        .andThen(swerveControllerCommand)
-        .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
-        .andThen(() -> {
-            m_ShooterSubsystem.stopRollers(false);
-            m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
-            atPlace = false;
-            })
-        //.andThen(new WaitCommand(0.5))
-        .andThen(new ParallelCommandGroup(thirdNotePath(), new WaitCommand(0.25)
-            .andThen(() -> m_ShooterSubsystem.speedUp(2500))
-            .andThen(new WaitUntilCommand(this::atPlace))
-            .andThen(() -> {
-                m_ShooterSubsystem.kickNote(false);
-                m_ShooterSubsystem.setIntakeRollers(ShooterConstants.kIntakeSpeed);
-            })
+        
+    if(type.getSelected().equals(AutoType.Three_Piece)) { // Doesn't use auto angle, might use alliance color
+        return new InstantCommand(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal))
+            .andThen(new WaitUntilCommand(m_ShooterSubsystem::atSpeed))
+            .andThen(() -> m_ShooterSubsystem.kickNote(false))
+            .andThen(new WaitUntilCommand(() -> !m_ShooterSubsystem.holdingNote))
             .andThen(new WaitCommand(0.25))
+            .andThen(() -> m_ShooterSubsystem.stopRollers(true))
             .andThen(() -> m_ShooterSubsystem.setShooterVelocity(0))
             .andThen(() -> m_ShooterSubsystem.intake())
-        ))
-        //.andThen(new ParallelCommandGroup(thirdNotePath(), new WaitCommand(0.25).andThen(() -> m_ShooterSubsystem.speedUp(2500)).andThen(shootWhileCommand).andThen(new WaitCommand(0.25)).andThen(() -> m_ShooterSubsystem.setShooterVelocity(0)).andThen(() -> m_ShooterSubsystem.intake())))
-        .andThen(() -> m_ShooterSubsystem.stopRollers(false))
-        .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
-        .andThen(() -> m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed))
-        .andThen(new ParallelCommandGroup(fourthNothPath(), new WaitCommand(0.25).andThen(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal + 250))))
-        .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
-        .andThen(() -> m_ShooterSubsystem.kickNote(false));
-
+            .andThen(moveBackPathCommand)
+            .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
+            .andThen(() -> {
+                m_ShooterSubsystem.stopRollers(false);
+                m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
+                atPlace = false;
+                })
+            //.andThen(new WaitCommand(0.5))
+            .andThen(new ParallelCommandGroup(thirdNotePath(), new WaitCommand(0.25)
+                .andThen(() -> m_ShooterSubsystem.speedUp(2500))
+                .andThen(new WaitUntilCommand(this::atPlace))
+                .andThen(() -> {
+                    m_ShooterSubsystem.kickNote(false);
+                    m_ShooterSubsystem.setIntakeRollers(ShooterConstants.kIntakeSpeed);
+                })
+                .andThen(new WaitCommand(0.25))
+                .andThen(() -> m_ShooterSubsystem.setShooterVelocity(0))
+                .andThen(() -> m_ShooterSubsystem.intake())
+            ))
+            //.andThen(new ParallelCommandGroup(thirdNotePath(), new WaitCommand(0.25).andThen(() -> m_ShooterSubsystem.speedUp(2500)).andThen(shootWhileCommand).andThen(new WaitCommand(0.25)).andThen(() -> m_ShooterSubsystem.setShooterVelocity(0)).andThen(() -> m_ShooterSubsystem.intake())))
+            .andThen(() -> m_ShooterSubsystem.stopRollers(false))
+            .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
+            .andThen(() -> m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed))
+            .andThen(new ParallelCommandGroup(fourthNothPath(), new WaitCommand(0.25).andThen(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal + 250))))
+            .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
+            .andThen(() -> m_ShooterSubsystem.kickNote(false));
+    }
+    else if(type.getSelected().equals(AutoType.Two_Piece)) { // Doesn't use auto angle or color
+        return new InstantCommand(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal))
+            .andThen(new WaitUntilCommand(m_ShooterSubsystem::atSpeed))
+            .andThen(() -> m_ShooterSubsystem.kickNote(false))
+            .andThen(new WaitUntilCommand(() -> !m_ShooterSubsystem.holdingNote))
+            .andThen(new WaitCommand(0.25))
+            .andThen(() -> m_ShooterSubsystem.stopRollers(true))
+            .andThen(() -> m_ShooterSubsystem.setShooterVelocity(0))
+            .andThen(() -> m_ShooterSubsystem.intake())
+            .andThen(moveBackPathCommand)
+            .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
+            .andThen(() -> {
+                m_ShooterSubsystem.stopRollers(false);
+                m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
+                })
+            .andThen(new ParallelCommandGroup(moveToSpeakerCommand, new WaitCommand(0.25).andThen(() -> m_ShooterSubsystem.speedUp(2500))))
+            .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
+            .andThen(() -> m_ShooterSubsystem.kickNote(false))
+            .andThen(new WaitCommand(0.5))
+            .andThen(() -> m_ShooterSubsystem.stopRollers(true));
+    }
+    else if(type.getSelected().equals(AutoType.Four_Piece)) { //Doesn't use angle, might use color
+        return new InstantCommand();
+    }
+    else if(type.getSelected().equals(AutoType.Angled_Two_Piece)) { //Uses angle, might use color
+        return new InstantCommand();
+    }
+    else { //Uses angle, doesn't use color
+        return new InstantCommand();
+        //one piece
+    }
     /*return new InstantCommand(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal))
         .andThen(new WaitCommand(0.5))
         .andThen(new InstantCommand(() -> m_ShooterSubsystem.kickNote(false)))
@@ -391,13 +405,21 @@ public class RobotContainer {
     }
 
     public enum AutoType {
-        Normal,
-        Balence
+        One_Piece,
+        Two_Piece,
+        Three_Piece,
+        Four_Piece,
+        Angled_Two_Piece
     }
 
     public enum AutoPiece {
         Cube,
         Cone
+    }
+
+    public enum AutoAngle {
+        Right,
+        Left
     }
 
     public enum AutoRotate {
@@ -427,7 +449,7 @@ public class RobotContainer {
 
     private Command thirdNotePath() {
         Trajectory traj = TrajectoryGenerator.generateTrajectory(
-            new Pose2d(2.8, 5.553, new Rotation2d(0)),
+            centerNotePoint,
             List.of(new Translation2d(1.3269, 5.553), new Translation2d(1.6269, 6.6)),
             new Pose2d(/*2.896*/2.8, 7.2, new Rotation2d(-Math.PI + 0.463647609001)),
             AutoConstants.kTrajectoryConfigBackwards);

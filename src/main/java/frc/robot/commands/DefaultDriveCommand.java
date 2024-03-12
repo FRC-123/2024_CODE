@@ -2,8 +2,11 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.LimelightHelpers;
 import frc.robot.Constants.OIConstants;
+import frc.robot.LimelightHelpers.LimelightResults;
 import frc.robot.subsystems.DriveSubsystem;
 
 public class DefaultDriveCommand extends Command {
@@ -17,13 +20,17 @@ public class DefaultDriveCommand extends Command {
 
     @Override
     public void execute() {
-        /*if(m_drivController.getAButton()) {
+        if(m_drivController.getAButton()) {
             LimelightResults results = LimelightHelpers.getLatestResults("limelight");
-            if(results.targetingResults.targets_Retro.length > 0) {
-                driveSubsystem.drive(0, 0, Math.copySign(Math.abs(results.targetingResults.targets_Retro[0].tx/30) + 0.05, -results.targetingResults.targets_Retro[0].tx), false, true);
-                return;
+            if(results.targetingResults.targets_Fiducials.length > 0 && (results.targetingResults.targets_Fiducials[0].fiducialID == 7 || results.targetingResults.targets_Fiducials[0].fiducialID == 4)) {
+                double angle = Math.atan(results.targetingResults.targets_Fiducials[0].getTargetPose_CameraSpace().getX()/results.targetingResults.targets_Fiducials[0].getTargetPose_CameraSpace().getZ());
+                SmartDashboard.putNumber("angle", angle);
+                driveSubsystem.drive(0, 0, Math.pow(angle/-2.0, 11/5), false, true);
             }
-        }*/
+            else {
+                driveSubsystem.drive(0, 0, 0, false, true);
+            }
+        }
         int fineTurn = 0;
         if(m_drivController.getXButton()) {
             fineTurn += 1;
