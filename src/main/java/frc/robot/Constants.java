@@ -161,6 +161,7 @@ public final class Constants {
 
     public static final double kShooterSpeedNormal = 2000;
     public static final double kIntakeSpeed = 0.6; //TODO
+    public static final double kIntakeUnjamSpeed = -1;
     public static final double kMidRollerIntakeSpeed = 0.5; //TODO
     public static final double kMidRollerGrabSpeed = -0.03; //TODO
     public static final double kMidRollerKickSpeed = 0.4; //TODO
@@ -172,7 +173,7 @@ public final class Constants {
     public static final double kWinchP = 0.04; //TODO
     public static final double kWinchI = 0; //TODO
     public static final double kWinchD = 0; //TODO
-    public static final double kWinchFF = 1 / ModuleConstants.kDriveWheelFreeSpeedRps; //TODO
+    public static final double kWinchFF = 0; //TODO
     public static final double kWinchMinOutput = -1; //TODO
     public static final double kWinchMaxOutput = 1; //TODO
 

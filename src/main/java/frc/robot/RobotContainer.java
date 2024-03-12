@@ -27,25 +27,30 @@ import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.LimelightHelpers.LimelightResults;
 import frc.robot.commands.DefaultDriveCommand;
+import frc.robot.commands.ShootCommand;
 import frc.robot.commands.ShootWhileMovingCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.WinchSubsystem;
 import frc.robot.subsystems.ArmSubsystem.ArmState;
 
 /**
@@ -59,10 +64,11 @@ public class RobotContainer {
   private final DriveSubsystem m_robotDrive = new DriveSubsystem();
   private final ShooterSubsystem m_ShooterSubsystem = new ShooterSubsystem();
   private final ArmSubsystem m_ArmSubsystem = new ArmSubsystem();
+  private final WinchSubsystem m_WinchSubsystem = new WinchSubsystem();
   //private final HiArmSubsystem m_hiArm = new HiArmSubsystem();
   //private final LoArmSubsystem m_loArm = new LoArmSubsystem(m_hiArm);
 
-  private Trajectory test_traj;
+  //private Trajectory test_traj;
   private ShootWhileMovingCommand shootWhileCommand;
 
   // The driver's controller
@@ -99,13 +105,13 @@ public class RobotContainer {
     SmartDashboard.putData("Auto Rot", autorotate);
     SmartDashboard.putNumber("limelight constant", 25);
     SmartDashboard.putNumber("limelight kp", 0.15);*/
-    try {
+    /*try {
         Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve("testcurve.wpilib.json");
         test_traj = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
     } catch (IOException ex) {
         test_traj = new Trajectory();
     }
-    SmartDashboard.putString("start", test_traj.getInitialPose().toString());
+    SmartDashboard.putString("start", test_traj.getInitialPose().toString());*/
   }
 
   /**
@@ -115,61 +121,31 @@ public class RobotContainer {
    * {@link JoystickButton}.
    */
   private void configureButtonBindings() {
-    /*new JoystickButton(m_armController, Button.kRightBumper.value)
-        .onTrue(
-            new ConditionalCommand(
-                new InstantCommand(() -> m_loArm.moveToPosition(0)), 
-                new InstantCommand(() -> m_hiArm.moveToPosition(140), m_hiArm)
-                    .andThen(new WaitUntilCommand(m_hiArm::atPoint))
-                    .andThen(new InstantCommand(() -> m_loArm.moveToPosition(0), m_hiArm, m_loArm)), 
-                m_hiArm::inSafeZone));
-        //.onTrue();
-        //.onTrue(new InstantCommand(() -> m_loArm.moveToPosition(0)));
-    new Trigger(this::rightTrigger)
-        .onTrue(
-            new ConditionalCommand(
-                new InstantCommand(() -> m_loArm.moveToPosition(105)), 
-                new InstantCommand(() -> m_hiArm.moveToPosition(140), m_hiArm)
-                    .andThen(new WaitUntilCommand(m_hiArm::atPoint))
-                    .andThen(new InstantCommand(() -> m_loArm.moveToPosition(105), m_hiArm, m_loArm)), 
-                m_hiArm::inSafeZone));
-        //.onTrue(new InstantCommand(() -> m_loArm.moveToPosition(90)));
-    
-    m_armControllerCommand.povUp().onTrue(new InstantCommand(m_hiArm::incrementArm, m_hiArm));
-    m_armControllerCommand.povDown().onTrue(new InstantCommand(m_hiArm::decrementArm, m_hiArm));
-
-    new JoystickButton(m_armController, Button.kA.value)
-        .onTrue(new InstantCommand(() -> LedSubsystem.toggle_cube()));
-
-    new JoystickButton(m_armController, Button.kY.value)
-        .onTrue(new InstantCommand(() -> LedSubsystem.toggle_cone()));
-
-    //new JoystickButton(m_driverController, Button.kB.value)
-    //    .onTrue(new InstantCommand(() -> m_robotDrive.setBrakeMode(IdleMode.kBrake)))
-    //    .onFalse(new InstantCommand(() -> m_robotDrive.setBrakeMode(IdleMode.kCoast)));
-    new JoystickButton(m_armController, Button.kLeftBumper.value)
-        .onTrue(new InstantCommand(() -> m_hiArm.moveToPosition(0)));*/
-    //new Trigger(this::leftTrigger)
-        //.onTrue(new InstantCommand(() -> m_hiArm.moveToPosition(185)));
-    new JoystickButton(m_driverController, Button.kY.value)
-        .onTrue(new InstantCommand(() -> m_robotDrive.zeroHeading(), m_robotDrive));
-    // Led bar triggers
     new JoystickButton(m_driverController, Button.kA.value)
         .whileTrue(new RunCommand(() -> m_robotDrive.setX(), m_robotDrive));
 
-    //m_armControllerCommand.povUp().onTrue(new InstantCommand(() -> m_ShooterSubsystem.setShooterVelocity(100)));
-    //m_armControllerCommand.povUp().onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopShooterRollers()));
-    m_armControllerCommand.povUp().onTrue(new InstantCommand(() -> m_ArmSubsystem.setState(ArmState.kUp), m_ArmSubsystem));
-    m_armControllerCommand.povDown().onTrue(new InstantCommand(() -> m_ArmSubsystem.setState(ArmState.kDown), m_ArmSubsystem));
-    m_armControllerCommand.leftBumper().onTrue(new InstantCommand(() -> m_ArmSubsystem.intakeNote()));
-    m_armControllerCommand.rightBumper().onTrue(new InstantCommand(() -> m_ArmSubsystem.expellNote()));
-    m_armControllerCommand.leftBumper().onFalse(new InstantCommand(() -> m_ArmSubsystem.stopRoller()));
-    m_armControllerCommand.rightBumper().onFalse(new InstantCommand(() -> m_ArmSubsystem.stopRoller()));
-    m_armControllerCommand.x().onTrue(new InstantCommand(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal)));
-    m_armControllerCommand.x().onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopShooterRollers()));
-    m_armControllerCommand.a().onTrue(new InstantCommand(() -> m_ShooterSubsystem.intake()));
-    m_armControllerCommand.a().onFalse(new InstantCommand(() -> m_ShooterSubsystem.stopRollers(false)));
+    new Trigger(this::R1Up)
+        .onTrue(new InstantCommand(() -> m_ArmSubsystem.setState(ArmState.kUp)))
+        .onFalse(new InstantCommand(() -> m_ArmSubsystem.setState(ArmState.kDown)));
+    new Trigger(this::R1Down)
+        .onTrue(new InstantCommand(() -> m_ArmSubsystem.setState(ArmState.kDown)));
 
+    m_armControllerCommand.povUp()
+        .onTrue(new InstantCommand(() -> m_ArmSubsystem.expellNote()))
+        .onFalse(new InstantCommand(() -> m_ArmSubsystem.stopRoller()));
+    m_armControllerCommand.povDown()
+        .onTrue(new InstantCommand(() -> m_ArmSubsystem.intakeNote()))
+        .onFalse(new InstantCommand(() -> m_ArmSubsystem.stopRoller()));
+
+    new Trigger(this::L1Up)
+        .onTrue(new InstantCommand(() -> m_WinchSubsystem.setWinchPosition(300)))
+        .onFalse(new InstantCommand(() -> m_WinchSubsystem.setWinchPosition(0)));
+    new Trigger(this::L1Down)
+        .onTrue(new InstantCommand(() -> m_WinchSubsystem.setWinchPosition(0)));
+
+    m_armControllerCommand.a().whileTrue(new StartEndCommand(() -> m_ShooterSubsystem.intake(), () -> m_ShooterSubsystem.stopRollers(false), m_ShooterSubsystem));
+    m_armControllerCommand.y().whileTrue(new ShootCommand(m_ShooterSubsystem));
+    m_armControllerCommand.b().whileTrue(new StartEndCommand(() -> m_ShooterSubsystem.setIntakeRollers(ShooterConstants.kIntakeUnjamSpeed), () -> m_ShooterSubsystem.stopRollers(false), m_ShooterSubsystem));
   }
     
 
@@ -382,7 +358,7 @@ public class RobotContainer {
 
         return joyout;
     }
-    /*private boolean leftTrigger() {
+    private boolean leftTrigger() {
         return m_armController.getRawAxis(2) > 0.75;
     }
     private boolean rightTrigger() {
@@ -399,7 +375,7 @@ public class RobotContainer {
     }
     private boolean L1Up() {
         return m_armController.getRawAxis(1) < -0.75;
-    }*/
+    }
 
     public enum AutoType {
         Normal,
