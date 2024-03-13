@@ -6,7 +6,6 @@ package frc.robot;
 
 import com.revrobotics.CANSparkBase.IdleMode;
 
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
@@ -160,11 +159,11 @@ public final class Constants {
     public static final double kShooterSpeedDeadband = 250;
 
     public static final double kShooterSpeedNormal = 2000;
-    public static final double kIntakeSpeed = 0.6; //TODO
+    public static final double kIntakeSpeed = 0.6;
     public static final double kIntakeUnjamSpeed = -1;
-    public static final double kMidRollerIntakeSpeed = 0.5; //TODO
+    public static final double kMidRollerIntakeSpeed = 0.5;
     public static final double kMidRollerGrabSpeed = -0.03; //TODO
-    public static final double kMidRollerKickSpeed = 0.4; //TODO
+    public static final double kMidRollerKickSpeed = 0.4;
   }
 
   public static final class WinchConstants {
@@ -173,6 +172,7 @@ public final class Constants {
     public static final double kTopPosition = -200; //-240
     public static final double kIdlePosition = -90; //-90
     public static final double kSpeed = -1;
+    public static final double kIdleSpeed = 0.25;
   }
 
   public static final class ArmConstants {
@@ -189,6 +189,6 @@ public final class Constants {
   }
 
   public static final class LEDConstants {
-    public static final int kLEDBarPWM = 9; //TODO
+    public static final int kLEDBarPWM = 9;
   }
 }

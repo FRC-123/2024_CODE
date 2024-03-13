@@ -38,6 +38,7 @@ import frc.robot.commands.DefaultDriveCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.LedSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.WinchSubsystem;
 import frc.robot.subsystems.ArmSubsystem.ArmState;
@@ -127,9 +128,14 @@ public class RobotContainer {
         .onFalse(new InstantCommand(() -> m_WinchSubsystem.setWinchPosition(0)));
     new Trigger(this::L1Down)
         .onTrue(new InstantCommand(() -> m_WinchSubsystem.setWinchPosition(0)));*/
+    
+    m_armControllerCommand.x().onTrue(new InstantCommand(() -> LedSubsystem.set_top_load_req()));
+    m_armControllerCommand.y().onTrue(new InstantCommand(() -> LedSubsystem.set_floor_req()));
+    m_armControllerCommand.rightBumper().onTrue(new InstantCommand(() -> LedSubsystem.set_our_alliance_solid()));
+    m_armControllerCommand.leftBumper().onTrue(new InstantCommand(() -> LedSubsystem.dynamic = true));
 
     m_armControllerCommand.a().whileTrue(new StartEndCommand(() -> m_ShooterSubsystem.intake(), () -> m_ShooterSubsystem.stopRollers(false), m_ShooterSubsystem));
-    m_armControllerCommand.y().whileTrue(new ShootCommand(m_ShooterSubsystem));
+    new Trigger(this::rightTrigger).whileTrue(new ShootCommand(m_ShooterSubsystem));
     m_armControllerCommand.b().whileTrue(new StartEndCommand(() -> m_ShooterSubsystem.setIntakeRollers(ShooterConstants.kIntakeUnjamSpeed), () -> m_ShooterSubsystem.stopRollers(false), m_ShooterSubsystem));
   }
     
@@ -434,9 +440,6 @@ public class RobotContainer {
     //public void setBrakeMode(IdleMode mode) {
     //    m_robotDrive.setBrakeMode(mode);
     //}
-    public void setSubsystemAuto(boolean auto) {
-        //m_hiArm.auto = auto;
-    }
     public void setFieldRelativeOffset(double offset) {
         m_robotDrive.setFieldRelativeOffset(offset);
     }

@@ -4,19 +4,9 @@
 
 package frc.robot;
 
-
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.CANSparkLowLevel.MotorType;
-
-import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.Constants.ShooterConstants;
 import frc.robot.subsystems.LedSubsystem;
 
 /**
@@ -33,7 +23,7 @@ public class Robot extends TimedRobot {
   private CANSparkMax shootmain = new CANSparkMax(ShooterConstants.kShootMainCanId, MotorType.kBrushless);
   private CANSparkMax shootfollow = new CANSparkMax(ShooterConstants.kShootFollowCanId, MotorType.kBrushless);*/
 
-  private XboxController testController = new XboxController(1);
+  //private XboxController testController = new XboxController(1);
   private RobotContainer m_robotContainer;
   //private LedSubsystem m_led_subsystem; // we need an instance to run during init
 
@@ -76,6 +66,9 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+    if(LedSubsystem.dynamic) {
+      LedSubsystem.set_dynamic_message();
+    }
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -92,7 +85,7 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    m_robotContainer.setSubsystemAuto(true);
+    LedSubsystem.dynamic = true;
     //m_robotContainer.setBrakeMode(IdleMode.kCoast);
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
@@ -107,18 +100,15 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
-    LedSubsystem.set_green_msg();
   }
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-  
   }
 
   @Override
   public void teleopInit() {
-    m_robotContainer.setSubsystemAuto(false);
     //m_robotContainer.setBrakeMode(IdleMode.kCoast);
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
@@ -133,7 +123,6 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    LedSubsystem.set_dynamic_message();
     /*double midspeed = 0;
     if(testController.getAButton()) {
       intake.set(0.6);

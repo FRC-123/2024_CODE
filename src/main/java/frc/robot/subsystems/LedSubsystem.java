@@ -12,18 +12,18 @@ public class LedSubsystem extends SubsystemBase {
     // don't know if its better to declare a bunch of static buffers (20 x 3 bytes
     // each) for each "message", or iterate over a background buffer and swap with
     // active display
-    private static LedState currenState;
     private static AddressableLEDBuffer led_red_alliance;    
     private static AddressableLEDBuffer led_blue_alliance;
     private static AddressableLEDBuffer led_red_blue;   
     private static AddressableLEDBuffer led_blank;
     private static AddressableLEDBuffer led_green;
-    private static AddressableLEDBuffer led_cube_req;
-    private static AddressableLEDBuffer led_cone_req;
+    private static AddressableLEDBuffer led_floor_req;
+    private static AddressableLEDBuffer led_top_load_req;
     private static AddressableLEDBuffer led_dynamic_msg;    // possible blinking message
     private static int dynamic_count = 0;   // internal counter for dynamic method
     // Store what the last hue of the first pixel is
     private static int m_rainbowFirstPixelHue = 0; 
+    public static boolean dynamic = false;
 
     static {
         led_bar = new AddressableLED(LEDConstants.kLEDBarPWM);
@@ -35,8 +35,8 @@ public class LedSubsystem extends SubsystemBase {
         led_blue_alliance = new AddressableLEDBuffer(20);
         led_red_blue = new AddressableLEDBuffer(20);
         led_blank = new AddressableLEDBuffer(20);
-        led_cube_req = new AddressableLEDBuffer(20);
-        led_cone_req = new AddressableLEDBuffer(20);
+        led_floor_req = new AddressableLEDBuffer(20);
+        led_top_load_req = new AddressableLEDBuffer(20);
         led_dynamic_msg = new AddressableLEDBuffer(20);
         led_green = new AddressableLEDBuffer(20);
 
@@ -53,11 +53,10 @@ public class LedSubsystem extends SubsystemBase {
             }
             led_blank.setLED(i, Color.kBlack);
             led_dynamic_msg.setLED(i, Color.kBlack);
-            led_cube_req.setLED(i, Color.kViolet); // cube color req
-            led_cone_req.setLED(i, Color.kYellow); // cone color req
+            led_floor_req.setLED(i, Color.kOrange);
+            led_top_load_req.setLED(i, Color.kGreen);
         }
-        led_bar.setData(led_red_blue);
-        currenState = LedState.Alliance;
+        led_bar.setData(led_blank);
         led_bar.start(); // optionally stop during disable, start on enable transition?
     }
     /**
@@ -118,24 +117,24 @@ public class LedSubsystem extends SubsystemBase {
      * 
      */
     public static void set_blank_msg() {
+        dynamic = false;
         led_bar.setData(led_blank);
-        currenState = LedState.Alliance;
     }
 
     /**
      * 
      */
     public static void set_red_blue_msg() {
+        dynamic = false;
         led_bar.setData(led_red_blue);
-        currenState = LedState.Alliance;
     }
 
     /**
      * 
      */
     public static void set_green_msg() {
+        dynamic = false;
         led_bar.setData(led_green);
-        currenState = LedState.Alliance;
     }
 
 
@@ -143,12 +142,15 @@ public class LedSubsystem extends SubsystemBase {
      * intended to be called once at start of teleop & auton enable
      */
     public static void set_our_alliance_solid() {
+        dynamic = false;
         DriverStation.Alliance our_alliance = DriverStation.getAlliance().get();
-        if ( our_alliance == DriverStation.Alliance.Red ) {
+        if(our_alliance == DriverStation.Alliance.Red) {
             led_bar.setData(led_red_alliance);
-        } else if ( our_alliance == DriverStation.Alliance.Blue ) {
+        }
+        else if(our_alliance == DriverStation.Alliance.Blue) {
             led_bar.setData(led_blue_alliance);
-        } else {    // invalid
+        }
+        else {    // invalid
             led_bar.setData(led_red_blue);
         }
     // or with boolean isRedAlliance as argument...
@@ -157,7 +159,6 @@ public class LedSubsystem extends SubsystemBase {
         // } else {
         //     led_bar.setData(led_blue_alliance);
         // }
-        currenState = LedState.Alliance;
     }
 
     private static void rainbow() {
@@ -184,46 +185,21 @@ public class LedSubsystem extends SubsystemBase {
         }
         rainbow();  // or do something else fancy to dynamic mesg here...
         led_bar.setData(led_dynamic_msg);
-        currenState = LedState.Alliance;
     }
 
     /**
      * 
      */
-    public static void set_cube_req() {
-        led_bar.setData(led_cube_req);
-        currenState = LedState.Cube;
+    public static void set_floor_req() {
+        dynamic = false;
+        led_bar.setData(led_floor_req);
     }
 
     /**
      * 
      */
-    public static void set_cone_req() {
-        led_bar.setData(led_cone_req);
-        currenState = LedState.Cone;
+    public static void set_top_load_req() {
+        dynamic = false;
+        led_bar.setData(led_top_load_req);
     }
-
-    public static void toggle_cone() {
-        if(currenState == LedState.Cone) {
-            set_our_alliance_solid();
-        }
-        else {
-            set_cone_req();
-        }
-    }
-
-    public static void toggle_cube() {
-        if(currenState == LedState.Cube) {
-            set_our_alliance_solid();
-        }
-        else {
-            set_cube_req();
-        }
-    }
-}
-
-enum LedState {
-    Alliance,
-    Cone,
-    Cube
 }
