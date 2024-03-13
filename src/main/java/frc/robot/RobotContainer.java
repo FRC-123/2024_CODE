@@ -135,7 +135,8 @@ public class RobotContainer {
     m_armControllerCommand.leftBumper().onTrue(new InstantCommand(() -> LedSubsystem.dynamic = true));
 
     m_armControllerCommand.a().whileTrue(new StartEndCommand(() -> m_ShooterSubsystem.intake(), () -> m_ShooterSubsystem.stopRollers(false), m_ShooterSubsystem));
-    new Trigger(this::rightTrigger).whileTrue(new ShootCommand(m_ShooterSubsystem));
+    new Trigger(this::rightTrigger).whileTrue(new ShootCommand(m_ShooterSubsystem, ShooterConstants.kShooterSpeedNormal));
+    new Trigger(this::leftTrigger).whileTrue(new ShootCommand(m_ShooterSubsystem, 1400));
     m_armControllerCommand.b().whileTrue(new StartEndCommand(() -> m_ShooterSubsystem.setIntakeRollers(ShooterConstants.kIntakeUnjamSpeed), () -> m_ShooterSubsystem.stopRollers(false), m_ShooterSubsystem));
   }
     

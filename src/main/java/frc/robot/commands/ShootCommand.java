@@ -6,15 +6,17 @@ import frc.robot.subsystems.ShooterSubsystem;
 
 public class ShootCommand extends Command{
     private ShooterSubsystem m_ShooterSubsystem;
+    private double speed;
 
-    public ShootCommand(ShooterSubsystem shooterSubsystem) {
+    public ShootCommand(ShooterSubsystem shooterSubsystem, double speed) {
         m_ShooterSubsystem = shooterSubsystem;
+        this.speed = speed;
         addRequirements(shooterSubsystem);
     }
 
     @Override
     public void initialize() {
-        m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal);
+        m_ShooterSubsystem.speedUp(speed);
     }
 
     @Override

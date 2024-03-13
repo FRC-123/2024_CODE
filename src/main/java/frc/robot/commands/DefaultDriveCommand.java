@@ -42,7 +42,7 @@ public class DefaultDriveCommand extends Command {
             if(results.targetingResults.targets_Fiducials.length > 0 && (results.targetingResults.targets_Fiducials[0].fiducialID == 7 || results.targetingResults.targets_Fiducials[0].fiducialID == 4)) {
                 double angle = Math.atan(results.targetingResults.targets_Fiducials[0].getTargetPose_CameraSpace().getX()/results.targetingResults.targets_Fiducials[0].getTargetPose_CameraSpace().getZ());
                 SmartDashboard.putNumber("angle", angle);
-                if(Math.abs(angle) > 0.2) {
+                if(Math.abs(angle) > 0.1) {
                     driveSubsystem.drive(-multiplier*MathUtil.applyDeadband(m_drivController.getLeftY(), 0.015), -multiplier*MathUtil.applyDeadband(m_drivController.getLeftX(), 0.015), angle/-2.5, false, true);
                 }
                 else {
