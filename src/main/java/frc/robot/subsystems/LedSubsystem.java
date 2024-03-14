@@ -53,7 +53,7 @@ public class LedSubsystem extends SubsystemBase {
             }
             led_blank.setLED(i, Color.kBlack);
             led_dynamic_msg.setLED(i, Color.kBlack);
-            led_floor_req.setLED(i, Color.kOrange);
+            led_floor_req.setLED(i, Color.kOrangeRed);
             led_top_load_req.setLED(i, Color.kGreen);
         }
         led_bar.setData(led_blank);

@@ -16,7 +16,9 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -148,6 +150,11 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     m_ShooterSubsystem.holdingNote = true;
+    SendableChooser<AutoType> type = (SendableChooser<AutoType>) SmartDashboard.getData("Auto Type");
+    SendableChooser<AutoAngle> angle = (SendableChooser<AutoAngle>) SmartDashboard.getData("Auto Angle");  //IMPORTANT: subwoofer angle is 120 degrees
+    //SendableChooser<AutoPiece> piece = (SendableChooser) SmartDashboard.getData("Auto Piece");
+    //SendableChooser<AutoRotate> rotate = (SendableChooser) SmartDashboard.getData("Auto Rot");
+
     //return new InstantCommand();
     // Create a voltage constraint to ensure we don't accelerate too fast
     // var autoVoltageConstraint =
@@ -159,60 +166,17 @@ public class RobotContainer {
     //         DriveConstants.kDriveKinematics,
     //         5);
 
-    // // Create config for trajectory
-    
-    Trajectory moveBackTraj = TrajectoryGenerator.generateTrajectory(
-        new Pose2d(1.3269, 5.553, new Rotation2d(0)),
-        List.of(),
-        centerNotePoint,
-        AutoConstants.kTrajectoryConfig);
-    
-    Trajectory moveToSpeakerTraj = TrajectoryGenerator.generateTrajectory(
-        centerNotePoint,
-        List.of(),
-        new Pose2d(1.3269, 5.553, new Rotation2d(0)),
-        AutoConstants.kTrajectoryConfigBackwards);
-
     m_robotDrive.zeroHeading();
-    m_robotDrive.resetOdometry(moveBackTraj.getInitialPose());
+    if(type.getSelected().equals(AutoType.One_Piece) || type.getSelected().equals(AutoType.Angled_Two_Piece)) {
+        if(angle.getSelected().equals(AutoAngle.Left)) {
+            m_robotDrive.setFieldRelativeOffset(60);
+        }
+        else {
+            m_robotDrive.setFieldRelativeOffset(-60);
+        }
+    }
+    //m_robotDrive.resetOdometry(moveBackTraj.getInitialPose());
 
-    SendableChooser<AutoType> type = (SendableChooser<AutoType>) SmartDashboard.getData("Auto Type");
-    SendableChooser<AutoAngle> angle = (SendableChooser<AutoAngle>) SmartDashboard.getData("Auto Angle");
-    //SendableChooser<AutoPiece> piece = (SendableChooser) SmartDashboard.getData("Auto Piece");
-    //SendableChooser<AutoRotate> rotate = (SendableChooser) SmartDashboard.getData("Auto Rot");
-
-    SwerveControllerCommand moveBackPathCommand = new SwerveControllerCommand(moveBackTraj, 
-        m_robotDrive::getPose, 
-        Constants.DriveConstants.kDriveKinematics, 
-        new PIDController(1, 0, 0), 
-        new PIDController(1, 0, 0), 
-        getThetaController(),
-        /*() -> {
-            double angle = -Math.atan((2.0 - m_robotDrive.getPose().getY())/m_robotDrive.getPose().getX());
-            if(angle < 0) {
-                angle = Math.PI + angle;
-            }
-            //return Rotation2d.fromRadians(angle);
-            return Rotation2d.fromRadians(angle);
-        },*/
-        m_robotDrive::setModuleStates,
-        m_robotDrive);
-    SwerveControllerCommand moveToSpeakerCommand =  new SwerveControllerCommand(moveToSpeakerTraj, 
-        m_robotDrive::getPose, 
-        Constants.DriveConstants.kDriveKinematics, 
-        new PIDController(1, 0, 0), 
-        new PIDController(1, 0, 0), 
-        getThetaController(),
-        /*() -> {
-            double angle = -Math.atan((2.0 - m_robotDrive.getPose().getY())/m_robotDrive.getPose().getX());
-            if(angle < 0) {
-                angle = Math.PI + angle;
-            }
-            //return Rotation2d.fromRadians(angle);
-            return Rotation2d.fromRadians(angle);
-        },*/
-        m_robotDrive::setModuleStates,
-        m_robotDrive);
     //shootWhileCommand = new ShootWhileMovingCommand(m_ShooterSubsystem, m_robotDrive);
     //return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive);
     /*return new InstantCommand(() -> {m_ShooterSubsystem.tempSetSpeed(0.45);
@@ -248,7 +212,7 @@ public class RobotContainer {
             .andThen(() -> m_ShooterSubsystem.stopRollers(true))
             .andThen(() -> m_ShooterSubsystem.setShooterVelocity(0))
             .andThen(() -> m_ShooterSubsystem.intake())
-            .andThen(moveBackPathCommand)
+            .andThen(backUpCommand(true))
             .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
             .andThen(() -> {
                 m_ShooterSubsystem.stopRollers(false);
@@ -284,13 +248,13 @@ public class RobotContainer {
             .andThen(() -> m_ShooterSubsystem.stopRollers(true))
             .andThen(() -> m_ShooterSubsystem.setShooterVelocity(0))
             .andThen(() -> m_ShooterSubsystem.intake())
-            .andThen(moveBackPathCommand)
+            .andThen(backUpCommand(true))
             .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
             .andThen(() -> {
                 m_ShooterSubsystem.stopRollers(false);
                 m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
                 })
-            .andThen(new ParallelCommandGroup(moveToSpeakerCommand, new WaitCommand(0.25).andThen(() -> m_ShooterSubsystem.speedUp(2500))))
+            .andThen(new ParallelCommandGroup(moveToSpeakerCommand(), new WaitCommand(0.25).andThen(() -> m_ShooterSubsystem.speedUp(2500))))
             .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
             .andThen(() -> m_ShooterSubsystem.kickNote(false))
             .andThen(new WaitCommand(0.5))
@@ -302,9 +266,15 @@ public class RobotContainer {
     else if(type.getSelected().equals(AutoType.Angled_Two_Piece)) { //Uses angle, might use color
         return new InstantCommand();
     }
-    else { //Uses angle, doesn't use color
-        return new InstantCommand();
-        //one piece
+    else { //Uses angle, uses color
+        return new InstantCommand(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal))
+            .andThen(new WaitUntilCommand(m_ShooterSubsystem::atSpeed))
+            .andThen(() -> m_ShooterSubsystem.kickNote(false))
+            .andThen(new WaitUntilCommand(() -> !m_ShooterSubsystem.holdingNote))
+            .andThen(new WaitCommand(0.25))
+            .andThen(() -> m_ShooterSubsystem.stopRollers(true))
+            .andThen(getOutCommand(true, angle.getSelected(), DriverStation.getAlliance().get()))
+            .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive);
     }
     /*return new InstantCommand(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal))
         .andThen(new WaitCommand(0.5))
@@ -452,6 +422,115 @@ public class RobotContainer {
         ProfiledPIDController thetaController = new ProfiledPIDController(1.25, 0, 0, new TrapezoidProfile.Constraints(2*Math.PI, 2*Math.PI));
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
         return thetaController;
+    }
+
+    private Command backUpCommand(boolean reset) {
+        Trajectory moveBackTraj = TrajectoryGenerator.generateTrajectory(
+            new Pose2d(1.3269, 5.553, new Rotation2d(0)),
+            List.of(),
+            centerNotePoint,
+            AutoConstants.kTrajectoryConfig);
+        SwerveControllerCommand moveBackPathCommand = new SwerveControllerCommand(moveBackTraj, 
+            m_robotDrive::getPose, 
+            Constants.DriveConstants.kDriveKinematics, 
+            new PIDController(1, 0, 0), 
+            new PIDController(1, 0, 0), 
+            getThetaController(),
+            /*() -> {
+                double angle = -Math.atan((2.0 - m_robotDrive.getPose().getY())/m_robotDrive.getPose().getX());
+                if(angle < 0) {
+                    angle = Math.PI + angle;
+                   }
+               //return Rotation2d.fromRadians(angle);
+                return Rotation2d.fromRadians(angle);
+            },*/
+            m_robotDrive::setModuleStates,
+            m_robotDrive);
+        if(reset) {
+            m_robotDrive.resetOdometry(moveBackTraj.getInitialPose());
+        }
+        return moveBackPathCommand;
+    }
+
+    private Command moveToSpeakerCommand() {
+        Trajectory moveToSpeakerTraj = TrajectoryGenerator.generateTrajectory(
+            centerNotePoint,
+            List.of(),
+            new Pose2d(1.3269, 5.553, new Rotation2d(0)),
+            AutoConstants.kTrajectoryConfigBackwards);
+        SwerveControllerCommand moveToSpeakerCommand =  new SwerveControllerCommand(moveToSpeakerTraj, 
+            m_robotDrive::getPose, 
+            Constants.DriveConstants.kDriveKinematics, 
+            new PIDController(1, 0, 0), 
+            new PIDController(1, 0, 0), 
+            getThetaController(),
+            /*() -> {
+                double angle = -Math.atan((2.0 - m_robotDrive.getPose().getY())/m_robotDrive.getPose().getX());
+                if(angle < 0) {
+                    angle = Math.PI + angle;
+                }
+                //return Rotation2d.fromRadians(angle);
+                return Rotation2d.fromRadians(angle);
+            },*/
+            m_robotDrive::setModuleStates,
+            m_robotDrive);
+        return moveToSpeakerCommand;
+    }
+
+    private Command getOutCommand(boolean reset, AutoAngle side, Alliance alliance) {
+        Trajectory traj;
+        if(alliance.equals(Alliance.Blue)) {
+            if(side.equals(AutoAngle.Left)) {
+                traj = TrajectoryGenerator.generateTrajectory(
+                    new Pose2d(0.686, 6.769, Rotation2d.fromDegrees(60)), 
+                    List.of(new Translation2d(2.169, 7.719)), 
+                    new Pose2d(3.918, 7.719, new Rotation2d()), 
+                    AutoConstants.kTrajectoryConfig);
+            }
+            else {
+                traj = TrajectoryGenerator.generateTrajectory(
+                    new Pose2d(0.657, 4.350, Rotation2d.fromDegrees(-60)), 
+                    List.of(new Translation2d(1.895, 2.274)), 
+                    new Pose2d(3.856, 1.502, new Rotation2d()), 
+                    AutoConstants.kTrajectoryConfig);
+            }
+        }
+        else {
+            if(side.equals(AutoAngle.Left)) {
+                traj = TrajectoryGenerator.generateTrajectory(
+                    new Pose2d(0.657, 3.85, Rotation2d.fromDegrees(60)), 
+                    List.of(new Translation2d(1.895, 5.926)), 
+                    new Pose2d(3.856, 6.698, new Rotation2d()), 
+                    AutoConstants.kTrajectoryConfig);
+            }
+            else {
+                traj = TrajectoryGenerator.generateTrajectory(
+                    new Pose2d(0.657, 1.431, Rotation2d.fromDegrees(-60)), 
+                    List.of(new Translation2d(1.895, 0.481)), 
+                    new Pose2d(3.856, 0.481, new Rotation2d()), 
+                    AutoConstants.kTrajectoryConfig);
+            }
+        }
+        SwerveControllerCommand moveOut = new SwerveControllerCommand(traj, 
+            m_robotDrive::getPose, 
+            Constants.DriveConstants.kDriveKinematics, 
+            new PIDController(1, 0, 0), 
+            new PIDController(1, 0, 0), 
+            getThetaController(),
+            /*() -> {
+                double angle = -Math.atan((2.0 - m_robotDrive.getPose().getY())/m_robotDrive.getPose().getX());
+                if(angle < 0) {
+                    angle = Math.PI + angle;
+                   }
+               //return Rotation2d.fromRadians(angle);
+                return Rotation2d.fromRadians(angle);
+            },*/
+            m_robotDrive::setModuleStates,
+            m_robotDrive);
+        if(reset) {
+            m_robotDrive.resetOdometry(traj.getInitialPose());
+        }
+        return moveOut;
     }
 
     private Command thirdNotePath() {
