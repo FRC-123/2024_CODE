@@ -63,7 +63,7 @@ public class RobotContainer {
   //private Trajectory test_traj;
   private boolean atPlace;
 
-  Pose2d centerNotePoint = new Pose2d(2.8, 5.553, new Rotation2d(0));
+  Pose2d centerNotePoint = new Pose2d(2.896, 5.553, new Rotation2d(0));
 
   // The driver's controller
   XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
@@ -88,6 +88,7 @@ public class RobotContainer {
     autoAngle.setDefaultOption("Right", AutoAngle.Right);
     SmartDashboard.putData("Auto Type", autoType);
     SmartDashboard.putData("Auto Angle", autoAngle);
+    SmartDashboard.putNumber("Auto Delay", 0);
     //SmartDashboard.putNumber("limelight constant", 25);
     //SmartDashboard.putNumber("limelight kp", 0.15);
     /*try {
@@ -152,6 +153,7 @@ public class RobotContainer {
     m_ShooterSubsystem.holdingNote = true;
     SendableChooser<AutoType> type = (SendableChooser<AutoType>) SmartDashboard.getData("Auto Type");
     SendableChooser<AutoAngle> angle = (SendableChooser<AutoAngle>) SmartDashboard.getData("Auto Angle");  //IMPORTANT: subwoofer angle is 120 degrees
+    double delay = SmartDashboard.getNumber("Auto Delay", 0);
     //SendableChooser<AutoPiece> piece = (SendableChooser) SmartDashboard.getData("Auto Piece");
     //SendableChooser<AutoRotate> rotate = (SendableChooser) SmartDashboard.getData("Auto Rot");
 
@@ -267,7 +269,8 @@ public class RobotContainer {
         return new InstantCommand();
     }
     else { //Uses angle, uses color
-        return new InstantCommand(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal))
+        return new WaitCommand(delay)
+            .andThen(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal))
             .andThen(new WaitUntilCommand(m_ShooterSubsystem::atSpeed))
             .andThen(() -> m_ShooterSubsystem.kickNote(false))
             .andThen(new WaitUntilCommand(() -> !m_ShooterSubsystem.holdingNote))
@@ -537,7 +540,7 @@ public class RobotContainer {
         Trajectory traj = TrajectoryGenerator.generateTrajectory(
             centerNotePoint,
             List.of(new Translation2d(1.3269, 5.553), new Translation2d(1.6269, 6.6)),
-            new Pose2d(/*2.896*/2.8, 7.2, new Rotation2d(-Math.PI + 0.463647609001)),
+            new Pose2d(/*MAY NEED TO BE 2.8*/2.896, 7.2, new Rotation2d(-Math.PI + 0.463647609001)),
             AutoConstants.kTrajectoryConfigBackwards);
         SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(traj, 
         m_robotDrive::getPose, 
@@ -553,7 +556,7 @@ public class RobotContainer {
 
     private Command fourthNothPath() {
         Trajectory traj = TrajectoryGenerator.generateTrajectory(
-            new Pose2d(/*2.896*/2.8, 7.2, new Rotation2d(0.3)),
+            new Pose2d(/*2.896*/2.896, 7.2, new Rotation2d(0.3)),
             List.of(),
             new Pose2d(/*2.896*/1.2, 5.553, new Rotation2d(Math.PI/2)),
             AutoConstants.kTrajectoryConfigBackwards);
