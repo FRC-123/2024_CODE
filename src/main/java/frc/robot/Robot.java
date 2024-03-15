@@ -37,7 +37,7 @@ public class Robot extends TimedRobot {
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
     LimelightHelpers.setPipelineIndex("limelight", 0);
-    LimelightHelpers.setLEDMode_PipelineControl("limelight");
+    LimelightHelpers.setLEDMode_ForceOff("limelight");
     LimelightHelpers.getLatestResults("limelight");
     //CameraServer.startAutomaticCapture();
     /*midmain.setIdleMode(IdleMode.kBrake);

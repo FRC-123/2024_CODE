@@ -44,7 +44,7 @@ public class ArmSubsystem extends SubsystemBase {
         if(kArmWinch.getForwardLimitSwitch(Type.kNormallyOpen).isPressed()) {
             encoderCount = 0;
         }
-        if(targetState.equals(ArmState.kUp) && encoderCount > 7) {
+        if(targetState.equals(ArmState.kUp) && encoderCount > 8) {
             kArmWinch.set(0);
         }
         SmartDashboard.putNumber("encoder", encoderCount);
@@ -56,7 +56,7 @@ public class ArmSubsystem extends SubsystemBase {
             kArmWinch.set(ArmConstants.kDownSpeed);
         }
         else {
-            if(encoderCount < 8) {
+            if(encoderCount < 9) {
                 kArmWinch.set(ArmConstants.kUpSpeed);
             }
         }

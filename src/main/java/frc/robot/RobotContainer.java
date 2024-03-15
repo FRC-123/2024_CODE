@@ -82,13 +82,17 @@ public class RobotContainer {
     SendableChooser<AutoType> autoType = new SendableChooser<AutoType>();
     autoType.addOption("One Piece", AutoType.One_Piece);
     autoType.addOption("Two Piece", AutoType.Two_Piece);
-    autoType.setDefaultOption("Three Piece", AutoType.Three_Piece);
+    autoType.addOption("Three Piece Right", AutoType.Three_Piece_Right);
+    autoType.setDefaultOption("Three Piece Left", AutoType.Three_Piece_Left);
     SendableChooser<AutoAngle> autoAngle = new SendableChooser<AutoAngle>();
     autoAngle.addOption("Left", AutoAngle.Left);
     autoAngle.setDefaultOption("Right", AutoAngle.Right);
     SmartDashboard.putData("Auto Type", autoType);
     SmartDashboard.putData("Auto Angle", autoAngle);
     SmartDashboard.putNumber("Auto Delay", 0);
+    SmartDashboard.putNumber("Aiming kp", 5.0);
+    SmartDashboard.putNumber("Aiming minsteer", 0.035);
+    SmartDashboard.putNumber("Aiming deadband", 0.05);
     //SmartDashboard.putNumber("limelight constant", 25);
     //SmartDashboard.putNumber("limelight kp", 0.15);
     /*try {
@@ -134,7 +138,8 @@ public class RobotContainer {
     
     m_armControllerCommand.x().onTrue(new InstantCommand(() -> LedSubsystem.set_top_load_req()));
     m_armControllerCommand.y().onTrue(new InstantCommand(() -> LedSubsystem.set_floor_req()));
-    m_armControllerCommand.rightBumper().onTrue(new InstantCommand(() -> LedSubsystem.set_our_alliance_solid()));
+    //m_armControllerCommand.rightBumper().onTrue(new InstantCommand(() -> LedSubsystem.set_our_alliance_solid()));
+    m_armControllerCommand.rightBumper().whileTrue(new ShootCommand(m_ShooterSubsystem, 5000));
     m_armControllerCommand.leftBumper().onTrue(new InstantCommand(() -> LedSubsystem.dynamic = true));
 
     m_armControllerCommand.a().whileTrue(new StartEndCommand(() -> m_ShooterSubsystem.intake(), () -> m_ShooterSubsystem.stopRollers(false), m_ShooterSubsystem));
@@ -205,7 +210,7 @@ public class RobotContainer {
         .andThen(new WaitCommand(1))
         .andThen(() -> m_ShooterSubsystem.stopRollers(true));*/
         
-    if(type.getSelected().equals(AutoType.Three_Piece)) { // Doesn't use auto angle, might use alliance color
+    if(type.getSelected().equals(AutoType.Three_Piece_Left)) { // Doesn't use auto angle, might use alliance color
         return new InstantCommand(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal))
             .andThen(new WaitUntilCommand(m_ShooterSubsystem::atSpeed))
             .andThen(() -> m_ShooterSubsystem.kickNote(false))
@@ -217,12 +222,17 @@ public class RobotContainer {
             .andThen(backUpCommand(true))
             .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
             .andThen(() -> {
-                m_ShooterSubsystem.stopRollers(false);
-                m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
+                //m_ShooterSubsystem.stopRollers(false);
+                //m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
                 atPlace = false;
                 })
             //.andThen(new WaitCommand(0.5))
-            .andThen(new ParallelCommandGroup(thirdNotePath(), new WaitCommand(0.25)
+            .andThen(new ParallelCommandGroup(thirdNotePathLeft(), new WaitCommand(0.5)
+                .andThen(() -> {
+                    m_ShooterSubsystem.stopRollers(false);
+                    m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
+                })
+                .andThen(new WaitCommand(0.25))
                 .andThen(() -> m_ShooterSubsystem.speedUp(2500))
                 .andThen(new WaitUntilCommand(this::atPlace))
                 .andThen(() -> {
@@ -234,12 +244,67 @@ public class RobotContainer {
                 .andThen(() -> m_ShooterSubsystem.intake())
             ))
             //.andThen(new ParallelCommandGroup(thirdNotePath(), new WaitCommand(0.25).andThen(() -> m_ShooterSubsystem.speedUp(2500)).andThen(shootWhileCommand).andThen(new WaitCommand(0.25)).andThen(() -> m_ShooterSubsystem.setShooterVelocity(0)).andThen(() -> m_ShooterSubsystem.intake())))
-            .andThen(() -> m_ShooterSubsystem.stopRollers(false))
             .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
-            .andThen(() -> m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed))
-            .andThen(new ParallelCommandGroup(fourthNothPath(), new WaitCommand(0.25).andThen(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal + 250))))
+            .andThen(new ParallelCommandGroup(fourthNothPathLeft(), new WaitCommand(0.5)
+                .andThen(() -> {
+                    m_ShooterSubsystem.stopRollers(false);
+                    m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);/*g */
+                })
+                .andThen(new WaitCommand(0.25))
+                .andThen(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal + 250))
+            ))
             .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
-            .andThen(() -> m_ShooterSubsystem.kickNote(false));
+            .andThen(() -> m_ShooterSubsystem.kickNote(false))
+            .andThen(new WaitCommand(0.25))
+            .andThen(() -> m_ShooterSubsystem.stopRollers(true));
+    }
+    else if(type.getSelected().equals(AutoType.Three_Piece_Right)) {
+        return new InstantCommand(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal))
+            .andThen(new WaitUntilCommand(m_ShooterSubsystem::atSpeed))
+            .andThen(() -> m_ShooterSubsystem.kickNote(false))
+            .andThen(new WaitUntilCommand(() -> !m_ShooterSubsystem.holdingNote))
+            .andThen(new WaitCommand(0.25))
+            .andThen(() -> m_ShooterSubsystem.stopRollers(true))
+            .andThen(() -> m_ShooterSubsystem.setShooterVelocity(0))
+            .andThen(() -> m_ShooterSubsystem.intake())
+            .andThen(backUpCommand(true))
+            .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
+            .andThen(() -> {
+                //m_ShooterSubsystem.stopRollers(false);
+                //m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
+                atPlace = false;
+                })
+            //.andThen(new WaitCommand(0.5))
+            .andThen(new ParallelCommandGroup(thirdNotePathRight(), new WaitCommand(0.5)
+                .andThen(() -> {
+                    m_ShooterSubsystem.stopRollers(false);
+                    m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
+                })
+                .andThen(new WaitCommand(0.25))
+                .andThen(() -> m_ShooterSubsystem.speedUp(2500))
+                .andThen(new WaitUntilCommand(this::atPlace))
+                .andThen(() -> {
+                    m_ShooterSubsystem.kickNote(false);
+                    m_ShooterSubsystem.setIntakeRollers(ShooterConstants.kIntakeSpeed);
+                })
+                .andThen(new WaitCommand(0.25))
+                .andThen(() -> m_ShooterSubsystem.setShooterVelocity(0))
+                .andThen(() -> m_ShooterSubsystem.intake())
+            ))
+            //.andThen(new ParallelCommandGroup(thirdNotePath(), new WaitCommand(0.25).andThen(() -> m_ShooterSubsystem.speedUp(2500)).andThen(shootWhileCommand).andThen(new WaitCommand(0.25)).andThen(() -> m_ShooterSubsystem.setShooterVelocity(0)).andThen(() -> m_ShooterSubsystem.intake())))
+            .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
+            .andThen(new ParallelCommandGroup(fourthNothPathRight(), new WaitCommand(0.5)
+                .andThen(() -> {
+                    m_ShooterSubsystem.stopRollers(false);
+                    m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);/*g */
+                })
+                .andThen(new WaitCommand(0.25))
+                .andThen(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal + 250))
+            ))
+            .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
+            .andThen(() -> m_ShooterSubsystem.kickNote(false))
+            .andThen(new WaitCommand(0.25))
+            .andThen(() -> m_ShooterSubsystem.stopRollers(true));
     }
     else if(type.getSelected().equals(AutoType.Two_Piece)) { // Doesn't use auto angle or color
         return new InstantCommand(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal))
@@ -390,7 +455,8 @@ public class RobotContainer {
     public enum AutoType {
         One_Piece,
         Two_Piece,
-        Three_Piece,
+        Three_Piece_Left,
+        Three_Piece_Right,
         Four_Piece,
         Angled_Two_Piece
     }
@@ -536,7 +602,7 @@ public class RobotContainer {
         return moveOut;
     }
 
-    private Command thirdNotePath() {
+    private Command thirdNotePathLeft() {
         Trajectory traj = TrajectoryGenerator.generateTrajectory(
             centerNotePoint,
             List.of(new Translation2d(1.3269, 5.553), new Translation2d(1.6269, 6.6)),
@@ -548,13 +614,31 @@ public class RobotContainer {
         new PIDController(1, 0, 0), 
         new PIDController(1, 0, 0), 
         getThetaController(),
-        this::autoPathAngle,
+        this::autoPathAngleLeft,
         m_robotDrive::setModuleStates,
         m_robotDrive);
         return swerveControllerCommand;
     }
 
-    private Command fourthNothPath() {
+    private Command thirdNotePathRight() {
+        Trajectory traj = TrajectoryGenerator.generateTrajectory(
+            centerNotePoint,
+            List.of(new Translation2d(1.3269, 5.553), new Translation2d(1.6269, 4.506)),
+            new Pose2d(/*MAY NEED TO BE 2.8*/2.896, 3.906, new Rotation2d(Math.PI - 0.463647609001)),
+            AutoConstants.kTrajectoryConfigBackwards);
+        SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(traj, 
+        m_robotDrive::getPose, 
+        Constants.DriveConstants.kDriveKinematics, 
+        new PIDController(1, 0, 0), 
+        new PIDController(1, 0, 0), 
+        getThetaController(),
+        this::autoPathAngleRight,
+        m_robotDrive::setModuleStates,
+        m_robotDrive);
+        return swerveControllerCommand;
+    }
+
+    private Command fourthNothPathLeft() {
         Trajectory traj = TrajectoryGenerator.generateTrajectory(
             new Pose2d(/*2.896*/2.896, 7.2, new Rotation2d(0.3)),
             List.of(),
@@ -572,7 +656,25 @@ public class RobotContainer {
         return swerveControllerCommand;
     }
 
-    private Rotation2d autoPathAngle() {
+    private Command fourthNothPathRight() {
+        Trajectory traj = TrajectoryGenerator.generateTrajectory(
+            new Pose2d(/*2.896*/2.896, 3.906, new Rotation2d(-0.3)),
+            List.of(),
+            new Pose2d(/*2.896*/1.2, 5.553, new Rotation2d(-Math.PI/2)),
+            AutoConstants.kTrajectoryConfigBackwards);
+        SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(traj, 
+        m_robotDrive::getPose, 
+        Constants.DriveConstants.kDriveKinematics, 
+        new PIDController(1, 0, 0), 
+        new PIDController(1, 0, 0), 
+        getThetaController(),
+        () -> new Rotation2d(0),
+        m_robotDrive::setModuleStates,
+        m_robotDrive);
+        return swerveControllerCommand;
+    }
+
+    private Rotation2d autoPathAngleLeft() {
         if(!atPlace) {
             //double angle = -Math.atan((5.553 - m_robotDrive.getPose().getY())/(m_robotDrive.getPose().getX()));
             /*if(angle < 0) {
@@ -582,6 +684,19 @@ public class RobotContainer {
         }
         else {
             return new Rotation2d(0.3);
+        }
+    }
+
+    private Rotation2d autoPathAngleRight() {
+        if(!atPlace) {
+            //double angle = -Math.atan((5.553 - m_robotDrive.getPose().getY())/(m_robotDrive.getPose().getX()));
+            /*if(angle < 0) {
+                angle = Math.PI + angle;
+            }*/
+            return Rotation2d.fromRadians(0);
+        }
+        else {
+            return new Rotation2d(-0.3);
         }
     }
 

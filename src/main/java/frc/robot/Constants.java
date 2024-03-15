@@ -159,7 +159,7 @@ public final class Constants {
     public static final double kShooterSpeedDeadband = 250;
 
     public static final double kShooterSpeedNormal = 2000;
-    public static final double kIntakeSpeed = 0.6;
+    public static final double kIntakeSpeed = 0.7;
     public static final double kIntakeUnjamSpeed = -1;
     public static final double kMidRollerIntakeSpeed = 0.5;
     public static final double kMidRollerGrabSpeed = -0.03; //TODO
@@ -185,7 +185,7 @@ public final class Constants {
     public static final double kUpSpeed = -1;
     public static final double kIntakeSpeed = 0.3;
     public static final double kExpellSpeed = -0.35;
-    public static final double kHoldSpeed = 0.05;
+    public static final double kHoldSpeed = 0.075;
   }
 
   public static final class LEDConstants {

@@ -38,18 +38,22 @@ public class DefaultDriveCommand extends Command {
             povmultiplier = 1; //POV Turbo
         }
         if(m_drivController.getAButton()) {
+            LimelightHelpers.setLEDMode_ForceOn("limelight");
             LimelightResults results = LimelightHelpers.getLatestResults("limelight");
             if(results.targetingResults.targets_Fiducials.length > 0 && (results.targetingResults.targets_Fiducials[0].fiducialID == 7 || results.targetingResults.targets_Fiducials[0].fiducialID == 4)) {
                 double angle = Math.atan(results.targetingResults.targets_Fiducials[0].getTargetPose_CameraSpace().getX()/results.targetingResults.targets_Fiducials[0].getTargetPose_CameraSpace().getZ());
                 SmartDashboard.putNumber("angle", angle);
-                if(Math.abs(angle) > 0.1) {
-                    driveSubsystem.drive(-multiplier*MathUtil.applyDeadband(m_drivController.getLeftY(), 0.015), -multiplier*MathUtil.applyDeadband(m_drivController.getLeftX(), 0.015), angle/-2.5, false, true);
+                if(Math.abs(angle) > SmartDashboard.getNumber("Aiming deadband", 0.05)) {
+                    driveSubsystem.drive(-multiplier*MathUtil.applyDeadband(m_drivController.getLeftY(), 0.015), -multiplier*MathUtil.applyDeadband(m_drivController.getLeftX(), 0.015), Math.copySign(Math.abs(angle/SmartDashboard.getNumber("Aiming kp", 5.0)) + SmartDashboard.getNumber("Aiming minsteer", 0.035), -angle), true, true);
                 }
                 else {
-                    driveSubsystem.drive(-multiplier*MathUtil.applyDeadband(m_drivController.getLeftY(), 0.015), -multiplier*MathUtil.applyDeadband(m_drivController.getLeftX(), 0.015), 0, false, true);
+                    driveSubsystem.drive(-multiplier*MathUtil.applyDeadband(m_drivController.getLeftY(), 0.015), -multiplier*MathUtil.applyDeadband(m_drivController.getLeftX(), 0.015), 0, true, true);
                 }
                 return;
             }
+        }
+        else {
+            LimelightHelpers.setLEDMode_ForceOff("limelight");
         }
         if(m_drivController.getPOV() == -1) {
             if(fineTurn == 0) {
