@@ -53,10 +53,10 @@ import frc.robot.subsystems.ArmSubsystem.ArmState;
  */
 public class RobotContainer {
   // The robot's subsystems
-  private final DriveSubsystem m_robotDrive = new DriveSubsystem();
-  private final ShooterSubsystem m_ShooterSubsystem = new ShooterSubsystem();
-  private final ArmSubsystem m_ArmSubsystem = new ArmSubsystem();
-  private final WinchSubsystem m_WinchSubsystem = new WinchSubsystem();
+  public final DriveSubsystem m_robotDrive = new DriveSubsystem();
+  public final ShooterSubsystem m_ShooterSubsystem = new ShooterSubsystem();
+  public final ArmSubsystem m_ArmSubsystem = new ArmSubsystem();
+  public final WinchSubsystem m_WinchSubsystem = new WinchSubsystem();
   //private final HiArmSubsystem m_hiArm = new HiArmSubsystem();
   //private final LoArmSubsystem m_loArm = new LoArmSubsystem(m_hiArm);
 
@@ -93,6 +93,7 @@ public class RobotContainer {
     SmartDashboard.putNumber("Aiming kp", 5.0);
     SmartDashboard.putNumber("Aiming minsteer", 0.035);
     SmartDashboard.putNumber("Aiming deadband", 0.05);
+    SmartDashboard.putNumber("Shoot Speed", 750);
     //SmartDashboard.putNumber("limelight constant", 25);
     //SmartDashboard.putNumber("limelight kp", 0.15);
     /*try {
@@ -139,7 +140,7 @@ public class RobotContainer {
     m_armControllerCommand.x().onTrue(new InstantCommand(() -> LedSubsystem.set_top_load_req()));
     m_armControllerCommand.y().onTrue(new InstantCommand(() -> LedSubsystem.set_floor_req()));
     //m_armControllerCommand.rightBumper().onTrue(new InstantCommand(() -> LedSubsystem.set_our_alliance_solid()));
-    m_armControllerCommand.rightBumper().whileTrue(new ShootCommand(m_ShooterSubsystem, 5000));
+    //m_armControllerCommand.rightBumper().whileTrue(new ShootCommand(m_ShooterSubsystem, 5000));
     m_armControllerCommand.leftBumper().onTrue(new InstantCommand(() -> LedSubsystem.dynamic = true));
 
     m_armControllerCommand.a().whileTrue(new StartEndCommand(() -> m_ShooterSubsystem.intake(), () -> m_ShooterSubsystem.stopRollers(false), m_ShooterSubsystem));
@@ -236,6 +237,7 @@ public class RobotContainer {
                 .andThen(() -> m_ShooterSubsystem.speedUp(2500))
                 .andThen(new WaitUntilCommand(this::atPlace))
                 .andThen(() -> {
+                    atPlace = true;
                     m_ShooterSubsystem.kickNote(false);
                     m_ShooterSubsystem.setIntakeRollers(ShooterConstants.kIntakeSpeed);
                 })
@@ -606,7 +608,7 @@ public class RobotContainer {
         Trajectory traj = TrajectoryGenerator.generateTrajectory(
             centerNotePoint,
             List.of(new Translation2d(1.3269, 5.553), new Translation2d(1.6269, 6.6)),
-            new Pose2d(/*MAY NEED TO BE 2.8*/2.896, 7.2, new Rotation2d(-Math.PI + 0.463647609001)),
+            new Pose2d(/*MAY NEED TO BE 2.8*/2.896, 7.3, new Rotation2d(-Math.PI + 0.463647609001)),
             AutoConstants.kTrajectoryConfigBackwards);
         SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(traj, 
         m_robotDrive::getPose, 
@@ -640,7 +642,7 @@ public class RobotContainer {
 
     private Command fourthNothPathLeft() {
         Trajectory traj = TrajectoryGenerator.generateTrajectory(
-            new Pose2d(/*2.896*/2.896, 7.2, new Rotation2d(0.3)),
+            new Pose2d(/*2.896*/2.896, 7.3, new Rotation2d(0.6)),
             List.of(),
             new Pose2d(/*2.896*/1.2, 5.553, new Rotation2d(Math.PI/2)),
             AutoConstants.kTrajectoryConfigBackwards);
@@ -683,7 +685,7 @@ public class RobotContainer {
             return Rotation2d.fromRadians(0);
         }
         else {
-            return new Rotation2d(0.3);
+            return new Rotation2d(0.4);
         }
     }
 
