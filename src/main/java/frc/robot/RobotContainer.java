@@ -83,6 +83,8 @@ public class RobotContainer {
     autoType.addOption("One Piece", AutoType.One_Piece);
     autoType.addOption("Two Piece", AutoType.Two_Piece);
     autoType.addOption("Three Piece Right", AutoType.Three_Piece_Right);
+    autoType.addOption("Four Piece Left", AutoType.Four_Piece_Left);
+    autoType.addOption("Four Piece Right", AutoType.Four_Piece_Right);
     autoType.setDefaultOption("Three Piece Left", AutoType.Three_Piece_Left);
     SendableChooser<AutoAngle> autoAngle = new SendableChooser<AutoAngle>();
     autoAngle.addOption("Left", AutoAngle.Left);
@@ -237,7 +239,6 @@ public class RobotContainer {
                 .andThen(() -> m_ShooterSubsystem.speedUp(2500))
                 .andThen(new WaitUntilCommand(this::atPlace))
                 .andThen(() -> {
-                    atPlace = true;
                     m_ShooterSubsystem.kickNote(false);
                     m_ShooterSubsystem.setIntakeRollers(ShooterConstants.kIntakeSpeed);
                 })
@@ -329,7 +330,56 @@ public class RobotContainer {
             .andThen(new WaitCommand(0.5))
             .andThen(() -> m_ShooterSubsystem.stopRollers(true));
     }
-    else if(type.getSelected().equals(AutoType.Four_Piece)) { //Doesn't use angle, might use color
+    else if(type.getSelected().equals(AutoType.Four_Piece_Left)) { //Doesn't use angle or color
+        return new InstantCommand(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal))
+            .andThen(new WaitUntilCommand(m_ShooterSubsystem::atSpeed))
+            .andThen(() -> m_ShooterSubsystem.kickNote(false))
+            .andThen(new WaitUntilCommand(() -> !m_ShooterSubsystem.holdingNote))
+            .andThen(new WaitCommand(0.25))
+            .andThen(() -> m_ShooterSubsystem.stopRollers(true))
+            .andThen(() -> m_ShooterSubsystem.setShooterVelocity(0))
+            .andThen(() -> m_ShooterSubsystem.intake())
+            .andThen(backUpCommand(true))
+            .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
+            .andThen(() -> {
+                //m_ShooterSubsystem.stopRollers(false);
+                //m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
+                atPlace = false;
+                })
+            //.andThen(new WaitCommand(0.5))
+            .andThen(new ParallelCommandGroup(fourPieceThirdNoteLeft(), new WaitCommand(0.5)
+                .andThen(() -> {
+                    m_ShooterSubsystem.stopRollers(false);
+                    m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
+                })
+                .andThen(new WaitCommand(0.25))
+                .andThen(() -> m_ShooterSubsystem.speedUp(2500))
+                .andThen(new WaitUntilCommand(this::atPlace))
+                .andThen(() -> {
+                    atPlace = true;
+                    m_ShooterSubsystem.kickNote(false);
+                    m_ShooterSubsystem.setIntakeRollers(ShooterConstants.kIntakeSpeed);
+                })
+                .andThen(new WaitCommand(0.25))
+                .andThen(() -> m_ShooterSubsystem.setShooterVelocity(0))
+                .andThen(() -> m_ShooterSubsystem.intake())
+            ))
+            //.andThen(new ParallelCommandGroup(thirdNotePath(), new WaitCommand(0.25).andThen(() -> m_ShooterSubsystem.speedUp(2500)).andThen(shootWhileCommand).andThen(new WaitCommand(0.25)).andThen(() -> m_ShooterSubsystem.setShooterVelocity(0)).andThen(() -> m_ShooterSubsystem.intake())))
+            .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
+            .andThen(new ParallelCommandGroup(fourPieceFourthNoteLeft(), new WaitCommand(0.5)
+                .andThen(() -> {
+                    m_ShooterSubsystem.stopRollers(false);
+                    m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);/*g */
+                })
+                .andThen(new WaitCommand(0.25))
+                .andThen(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal + 250))
+            ))
+            .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
+            .andThen(() -> m_ShooterSubsystem.kickNote(false))
+            .andThen(new WaitCommand(0.25))
+            .andThen(() -> m_ShooterSubsystem.stopRollers(true));
+    }
+    else if(type.getSelected().equals(AutoType.Four_Piece_Right)) { //Doesn't use angle or color
         return new InstantCommand();
     }
     else if(type.getSelected().equals(AutoType.Angled_Two_Piece)) { //Uses angle, might use color
@@ -459,7 +509,8 @@ public class RobotContainer {
         Two_Piece,
         Three_Piece_Left,
         Three_Piece_Right,
-        Four_Piece,
+        Four_Piece_Left,
+        Four_Piece_Right,
         Angled_Two_Piece
     }
 
@@ -608,7 +659,7 @@ public class RobotContainer {
         Trajectory traj = TrajectoryGenerator.generateTrajectory(
             centerNotePoint,
             List.of(new Translation2d(1.3269, 5.553), new Translation2d(1.6269, 6.6)),
-            new Pose2d(/*MAY NEED TO BE 2.8*/2.896, 7.3, new Rotation2d(-Math.PI + 0.463647609001)),
+            new Pose2d(/*MAY NEED TO BE 2.8*/2.896, 7.2, new Rotation2d(-Math.PI + 0.463647609001)),
             AutoConstants.kTrajectoryConfigBackwards);
         SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(traj, 
         m_robotDrive::getPose, 
@@ -642,7 +693,7 @@ public class RobotContainer {
 
     private Command fourthNothPathLeft() {
         Trajectory traj = TrajectoryGenerator.generateTrajectory(
-            new Pose2d(/*2.896*/2.896, 7.3, new Rotation2d(0.6)),
+            new Pose2d(/*2.896*/2.896, 7.2, new Rotation2d(0)),
             List.of(),
             new Pose2d(/*2.896*/1.2, 5.553, new Rotation2d(Math.PI/2)),
             AutoConstants.kTrajectoryConfigBackwards);
@@ -663,6 +714,42 @@ public class RobotContainer {
             new Pose2d(/*2.896*/2.896, 3.906, new Rotation2d(-0.3)),
             List.of(),
             new Pose2d(/*2.896*/1.2, 5.553, new Rotation2d(-Math.PI/2)),
+            AutoConstants.kTrajectoryConfigBackwards);
+        SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(traj, 
+        m_robotDrive::getPose, 
+        Constants.DriveConstants.kDriveKinematics, 
+        new PIDController(1, 0, 0), 
+        new PIDController(1, 0, 0), 
+        getThetaController(),
+        () -> new Rotation2d(0),
+        m_robotDrive::setModuleStates,
+        m_robotDrive);
+        return swerveControllerCommand;
+    }
+
+    private Command fourPieceThirdNoteLeft() {
+        Trajectory traj = TrajectoryGenerator.generateTrajectory(
+            centerNotePoint,
+            List.of(new Translation2d(1.3269, 5.553), new Translation2d(1.6269, 6.6)),
+            new Pose2d(/*MAY NEED TO BE 2.8*/2.896, 7.3, new Rotation2d(-Math.PI + 0.463647609001)),
+            AutoConstants.kTrajectoryConfigBackwards);
+        SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(traj, 
+        m_robotDrive::getPose, 
+        Constants.DriveConstants.kDriveKinematics, 
+        new PIDController(1, 0, 0), 
+        new PIDController(1, 0, 0), 
+        getThetaController(),
+        this::autoPathAngleLeft,
+        m_robotDrive::setModuleStates,
+        m_robotDrive);
+        return swerveControllerCommand;
+    }
+
+    private Command fourPieceFourthNoteLeft() {
+        Trajectory traj = TrajectoryGenerator.generateTrajectory(
+            new Pose2d(/*2.896*/2.896, 7.3, new Rotation2d(0.4)),
+            List.of(new Translation2d(1.1, 5.553), new Translation2d(1.6269, 4.506)),
+            new Pose2d(/*2.896*/2.896, 3.906, new Rotation2d(Math.PI)),
             AutoConstants.kTrajectoryConfigBackwards);
         SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(traj, 
         m_robotDrive::getPose, 
@@ -698,7 +785,7 @@ public class RobotContainer {
             return Rotation2d.fromRadians(0);
         }
         else {
-            return new Rotation2d(-0.3);
+            return new Rotation2d(-0.4);
         }
     }
 
