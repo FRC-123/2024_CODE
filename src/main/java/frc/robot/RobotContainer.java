@@ -372,10 +372,18 @@ public class RobotContainer {
                 })
                 .andThen(new WaitCommand(0.25))
                 .andThen(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal + 250))
+                .andThen(new WaitUntilCommand(this::atPlace))
+                .andThen(() -> {
+                    m_ShooterSubsystem.kickNote(false);
+                    m_ShooterSubsystem.setIntakeRollers(ShooterConstants.kIntakeSpeed);
+                })
+                .andThen(new WaitCommand(0.25))
+                .andThen(() -> m_ShooterSubsystem.setShooterVelocity(0))
+                .andThen(() -> m_ShooterSubsystem.intake())
             ))
             .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
-            .andThen(() -> m_ShooterSubsystem.kickNote(false))
-            .andThen(new WaitCommand(0.25))
+            //.andThen(() -> m_ShooterSubsystem.kickNote(false))
+            //.andThen(new WaitCommand(0.25))
             .andThen(() -> m_ShooterSubsystem.stopRollers(true));
     }
     else if(type.getSelected().equals(AutoType.Four_Piece_Right)) { //Doesn't use angle or color
@@ -729,7 +737,7 @@ public class RobotContainer {
     private Command fourPieceThirdNoteLeft() {
         Trajectory traj = TrajectoryGenerator.generateTrajectory(
             centerNotePoint,
-            List.of(new Translation2d(1.3269, 5.553), new Translation2d(1.6269, 6.6)),
+            List.of(new Translation2d(1.37, 5.553), new Translation2d(2, 6.6)),
             new Pose2d(/*MAY NEED TO BE 2.8*/2.896, 7.3, new Rotation2d(-Math.PI + 0.463647609001)),
             AutoConstants.kTrajectoryConfigBackwards);
         SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(traj, 
@@ -747,7 +755,7 @@ public class RobotContainer {
     private Command fourPieceFourthNoteLeft() {
         Trajectory traj = TrajectoryGenerator.generateTrajectory(
             new Pose2d(/*2.896*/2.896, 7.3, new Rotation2d(0.4)),
-            List.of(new Translation2d(1.1, 5.553), new Translation2d(1.6269, 4.506)),
+            List.of(new Translation2d(1.15, 5.553), new Translation2d(1.6269, 4.506)),
             new Pose2d(/*2.896*/2.896, 3.906, new Rotation2d(Math.PI)),
             AutoConstants.kTrajectoryConfigBackwards);
         SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(traj, 
@@ -771,7 +779,12 @@ public class RobotContainer {
             return Rotation2d.fromRadians(0);
         }
         else {
-            return new Rotation2d(0.4);
+            if(m_robotDrive.getPose().getX() > 1.4) {
+                return new Rotation2d(0.4);
+            }
+            else {
+                return Rotation2d.fromRadians(0);
+            }
         }
     }
 
