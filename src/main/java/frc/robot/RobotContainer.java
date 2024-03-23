@@ -382,9 +382,21 @@ public class RobotContainer {
                 .andThen(() -> m_ShooterSubsystem.intake())
             ))
             .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
+            .andThen(new ParallelCommandGroup(fourPieceReturnLastNoteLeft().andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive), new WaitCommand(0.5)
+                .andThen(() -> {
+                    m_ShooterSubsystem.stopRollers(false);
+                    m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
+                })
+                .andThen(new WaitCommand(0.25))
+                .andThen(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal + 250))
+                .andThen(new WaitUntilCommand(this::atPlace))
+                .andThen(() -> m_ShooterSubsystem.kickNote(false))
+                .andThen(new WaitCommand(0.25))
+                .andThen(() -> m_ShooterSubsystem.stopRollers(true))
+            ));
             //.andThen(() -> m_ShooterSubsystem.kickNote(false))
             //.andThen(new WaitCommand(0.25))
-            .andThen(() -> m_ShooterSubsystem.stopRollers(true));
+            //.andThen(() -> m_ShooterSubsystem.stopRollers(true));
     }
     else if(type.getSelected().equals(AutoType.Four_Piece_Right)) { //Doesn't use angle or color
         return new InstantCommand();
@@ -757,6 +769,24 @@ public class RobotContainer {
             new Pose2d(/*2.896*/2.896, 7.3, new Rotation2d(0.4)),
             List.of(new Translation2d(1.15, 5.553), new Translation2d(1.6269, 4.506)),
             new Pose2d(/*2.896*/2.896, 3.906, new Rotation2d(Math.PI)),
+            AutoConstants.kTrajectoryConfigBackwards);
+        SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(traj, 
+        m_robotDrive::getPose, 
+        Constants.DriveConstants.kDriveKinematics, 
+        new PIDController(1, 0, 0), 
+        new PIDController(1, 0, 0), 
+        getThetaController(),
+        () -> new Rotation2d(0),
+        m_robotDrive::setModuleStates,
+        m_robotDrive);
+        return swerveControllerCommand;
+    }
+
+    public Command fourPieceReturnLastNoteLeft() {
+        Trajectory traj = TrajectoryGenerator.generateTrajectory(
+            new Pose2d(/*2.896*/2.896, 3.906, new Rotation2d(0)),
+            List.of(),
+            new Pose2d(/*2.896*/1.35, 5.553, new Rotation2d(-Math.PI/2)),
             AutoConstants.kTrajectoryConfigBackwards);
         SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(traj, 
         m_robotDrive::getPose, 
