@@ -6,7 +6,6 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.LedSubsystem;
@@ -25,7 +24,7 @@ public class Robot extends TimedRobot {
   private CANSparkMax shootmain = new CANSparkMax(ShooterConstants.kShootMainCanId, MotorType.kBrushless);
   private CANSparkMax shootfollow = new CANSparkMax(ShooterConstants.kShootFollowCanId, MotorType.kBrushless);*/
 
-  private XboxController testController = new XboxController(1);
+  //private XboxController testController = new XboxController(1);
   private RobotContainer m_robotContainer;
   //private LedSubsystem m_led_subsystem; // we need an instance to run during init
 
@@ -125,12 +124,12 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    if(testController.getRightBumper()) {
+    /*if(testController.getRightBumper()) {
       m_robotContainer.m_ShooterSubsystem.setShooterVelocity(SmartDashboard.getNumber("Shoot Speed", 4000));
     }
     else {
       m_robotContainer.m_ShooterSubsystem.stopShooterRollers();
-    }
+    }*/
     /*double midspeed = 0;
     if(testController.getAButton()) {
       intake.set(0.6);

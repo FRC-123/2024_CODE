@@ -159,6 +159,7 @@ public final class Constants {
     public static final double kShooterSpeedDeadband = 250;
 
     public static final double kShooterSpeedNormal = 2000;
+    public static final double kShooterSpeedAmp = 650;
     public static final double kIntakeSpeed = 0.7;
     public static final double kIntakeUnjamSpeed = -1;
     public static final double kMidRollerIntakeSpeed = 0.5;
@@ -177,15 +178,16 @@ public final class Constants {
 
   public static final class ArmConstants {
     public static final int kArmWinchCanId = 16;
-    public static final int kArmRollerCanId = 15;
+    //public static final int kArmRollerCanId = 15;
 
-    public static final int kEncoderDIO = 5;
+    //public static final int kEncoderDIO = 5;
 
-    public static final double kDownSpeed = 1;
-    public static final double kUpSpeed = -1;
-    public static final double kIntakeSpeed = 0.3;
-    public static final double kExpellSpeed = -0.35;
-    public static final double kHoldSpeed = 0.075;
+    //public static final double kDownSpeed = 1;
+    //public static final double kUpSpeed = -1;
+    //public static final double kIntakeSpeed = 0.3;
+    //public static final double kExpellSpeed = -0.35;
+    //public static final double kHoldSpeed = 0.075;
+    public static final double kSpeed = 0.25;
   }
 
   public static final class LEDConstants {

@@ -1,36 +1,36 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
-import com.revrobotics.SparkLimitSwitch.Type;
 
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.OIConstants;
 
 public class ArmSubsystem extends SubsystemBase {
     private final CANSparkMax kArmWinch = new CANSparkMax(ArmConstants.kArmWinchCanId, MotorType.kBrushed);
-    private final CANSparkMax kArmRoller = new CANSparkMax(ArmConstants.kArmRollerCanId, MotorType.kBrushed);
-    private final DigitalInput kEncoderSensor = new DigitalInput(ArmConstants.kEncoderDIO);
+    //private final CANSparkMax kArmRoller = new CANSparkMax(ArmConstants.kArmRollerCanId, MotorType.kBrushed);
+    //private final DigitalInput kEncoderSensor = new DigitalInput(ArmConstants.kEncoderDIO);
 
-    private int encoderCount = 0;
-    private boolean encoderState = false;
-    private ArmState targetState = ArmState.kDown;
+    private final XboxController controller = new XboxController(OIConstants.kArmControllerPort);
+
+    //private int encoderCount = 0;
+    //private boolean encoderState = false;
+    //private ArmState targetState = ArmState.kDown;
     //private RollerState rollerState = RollerState.None;
 
     public ArmSubsystem() {
         CommandScheduler.getInstance().registerSubsystem(this);
 
-        kArmRoller.setIdleMode(IdleMode.kBrake);
-        kArmRoller.setInverted(true);
+        //kArmRoller.setIdleMode(IdleMode.kBrake);
+        //kArmRoller.setInverted(true);
     }
 
     @Override
     public void periodic() {
-        if(targetState.equals(ArmState.kUp)) {
+        /*if(targetState.equals(ArmState.kUp)) {
             if(encoderState == false && kEncoderSensor.get()) {
                 encoderCount++;
             }
@@ -47,10 +47,11 @@ public class ArmSubsystem extends SubsystemBase {
         if(targetState.equals(ArmState.kUp) && encoderCount > 8) {
             kArmWinch.set(0);
         }
-        SmartDashboard.putNumber("encoder", encoderCount);
+        SmartDashboard.putNumber("encoder", encoderCount);*/
+        kArmWinch.set(controller.getRightY()*ArmConstants.kSpeed);
     }
 
-    public void setState(ArmState state) {
+    /*public void setState(ArmState state) {
         targetState = state;
         if(state == ArmState.kDown) {
             kArmWinch.set(ArmConstants.kDownSpeed);
@@ -60,13 +61,13 @@ public class ArmSubsystem extends SubsystemBase {
                 kArmWinch.set(ArmConstants.kUpSpeed);
             }
         }
-    }
+    }*/
 
-    public void stopWinch() {
+    /*public void stopWinch() {
         kArmWinch.set(0);
-    }
+    }*/
 
-    public void intakeNote() {
+    /*public void intakeNote() {
         kArmRoller.set(ArmConstants.kIntakeSpeed);
     }
 
@@ -81,7 +82,7 @@ public class ArmSubsystem extends SubsystemBase {
     public enum ArmState {
         kDown,
         kUp
-    }
+    }*/
 
     /*public enum RollerState {
         Intake,

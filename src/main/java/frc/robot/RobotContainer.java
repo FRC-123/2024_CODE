@@ -43,7 +43,6 @@ import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.LedSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.WinchSubsystem;
-import frc.robot.subsystems.ArmSubsystem.ArmState;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -120,18 +119,18 @@ public class RobotContainer {
     new JoystickButton(m_driverController, Button.kStart.value)
         .onTrue(new InstantCommand(() -> m_robotDrive.zeroHeading(), m_robotDrive));
 
-    new Trigger(this::R1Up)
-        .onTrue(new InstantCommand(() -> m_ArmSubsystem.setState(ArmState.kUp)))
-        .onFalse(new InstantCommand(() -> m_ArmSubsystem.setState(ArmState.kDown)));
-    new Trigger(this::R1Down)
-        .onTrue(new InstantCommand(() -> m_ArmSubsystem.setState(ArmState.kDown)));
+    //new Trigger(this::R1Up)
+    //    .onTrue(new InstantCommand(() -> m_ArmSubsystem.setState(ArmState.kUp)))
+    //    .onFalse(new InstantCommand(() -> m_ArmSubsystem.setState(ArmState.kDown)));
+    //new Trigger(this::R1Down)
+    //    .onTrue(new InstantCommand(() -> m_ArmSubsystem.setState(ArmState.kDown)));
 
-    m_armControllerCommand.povUp()
-        .onTrue(new InstantCommand(() -> m_ArmSubsystem.expellNote()))
-        .onFalse(new InstantCommand(() -> m_ArmSubsystem.stopRoller()));
-    m_armControllerCommand.povDown()
-        .onTrue(new InstantCommand(() -> m_ArmSubsystem.intakeNote()))
-        .onFalse(new InstantCommand(() -> m_ArmSubsystem.stopRoller()));
+    //m_armControllerCommand.povUp()
+    //    .onTrue(new InstantCommand(() -> m_ArmSubsystem.expellNote()))
+    //    .onFalse(new InstantCommand(() -> m_ArmSubsystem.stopRoller()));
+    //m_armControllerCommand.povDown()
+    //    .onTrue(new InstantCommand(() -> m_ArmSubsystem.intakeNote()))
+    //    .onFalse(new InstantCommand(() -> m_ArmSubsystem.stopRoller()));
 
     /*new Trigger(this::L1Up)
         .onTrue(new InstantCommand(() -> m_WinchSubsystem.setWinchPosition(300)))
@@ -142,7 +141,7 @@ public class RobotContainer {
     m_armControllerCommand.x().onTrue(new InstantCommand(() -> LedSubsystem.set_top_load_req()));
     m_armControllerCommand.y().onTrue(new InstantCommand(() -> LedSubsystem.set_floor_req()));
     //m_armControllerCommand.rightBumper().onTrue(new InstantCommand(() -> LedSubsystem.set_our_alliance_solid()));
-    //m_armControllerCommand.rightBumper().whileTrue(new ShootCommand(m_ShooterSubsystem, 5000));
+    m_armControllerCommand.rightBumper().whileTrue(new ShootCommand(m_ShooterSubsystem, ShooterConstants.kShooterSpeedAmp));
     m_armControllerCommand.leftBumper().onTrue(new InstantCommand(() -> LedSubsystem.dynamic = true));
 
     m_armControllerCommand.a().whileTrue(new StartEndCommand(() -> m_ShooterSubsystem.intake(), () -> m_ShooterSubsystem.stopRollers(false), m_ShooterSubsystem));
