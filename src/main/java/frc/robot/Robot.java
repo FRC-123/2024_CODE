@@ -5,8 +5,10 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.LimelightHelpers.LimelightResults;
 import frc.robot.subsystems.LedSubsystem;
 
 /**
@@ -37,7 +39,8 @@ public class Robot extends TimedRobot {
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
     LimelightHelpers.setPipelineIndex("limelight", 0);
-    LimelightHelpers.setLEDMode_ForceOff("limelight");
+    //LimelightHelpers.setLEDMode_ForceOff("limelight");
+    LimelightHelpers.setLEDMode_ForceOn("limelight");
     LimelightHelpers.getLatestResults("limelight");
     //CameraServer.startAutomaticCapture();
     /*midmain.setIdleMode(IdleMode.kBrake);
@@ -123,6 +126,10 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
+    LimelightResults results = LimelightHelpers.getLatestResults("limelight");
+    if(results.targetingResults.targets_Fiducials.length > 0) {
+      SmartDashboard.putString("aprildistance", results.targetingResults.targets_Fiducials[0].getTargetPose_CameraSpace().toString());
+    }
     /*if(testController.getRightBumper()) {
       m_robotContainer.m_ShooterSubsystem.setShooterVelocity(SmartDashboard.getNumber("Shoot Speed", 4000));
     }
