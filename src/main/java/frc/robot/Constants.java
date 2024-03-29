@@ -122,17 +122,26 @@ public final class Constants {
   }
 
   public static final class AutoConstants {
-    public static final double kMaxSpeedMetersPerSecond = 1.75;
-    public static final double kMaxAccelerationMetersPerSecondSquared = 2.25;
+    public static final double kMaxSpeedMetersPerSecond = 1.5;
+    public static final double kMaxAccelerationMetersPerSecondSquared = 2;
     public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
     public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
 
     public static final TrapezoidProfile.Constraints kThetaControllerConstraints = new TrapezoidProfile.Constraints(kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
-    public static final TrajectoryConfig kTrajectoryConfig = new TrajectoryConfig(AutoConstants.kMaxSpeedMetersPerSecond, AutoConstants.kMaxAccelerationMetersPerSecondSquared)
+    public static final TrajectoryConfig kTrajectoryConfigSlow = new TrajectoryConfig(AutoConstants.kMaxSpeedMetersPerSecond, AutoConstants.kMaxAccelerationMetersPerSecondSquared)
       .setKinematics(DriveConstants.kDriveKinematics);
-    public static final TrajectoryConfig kTrajectoryConfigBackwards = new TrajectoryConfig(AutoConstants.kMaxSpeedMetersPerSecond, AutoConstants.kMaxAccelerationMetersPerSecondSquared)
+    public static final TrajectoryConfig kTrajectoryConfigBackwardsSlow = new TrajectoryConfig(AutoConstants.kMaxSpeedMetersPerSecond, AutoConstants.kMaxAccelerationMetersPerSecondSquared)
       .setKinematics(DriveConstants.kDriveKinematics)
       .setReversed(true);
+
+    public static final TrajectoryConfig kTrajectoryConfigFast = new TrajectoryConfig(1.75, 2.25)
+      .setKinematics(DriveConstants.kDriveKinematics);
+    public static final TrajectoryConfig kTrajectoryConfigBackwardsFast = new TrajectoryConfig(1.75, 2.25)
+      .setKinematics(DriveConstants.kDriveKinematics)
+      .setReversed(true);
+    
+    public static TrajectoryConfig kTrajectoryConfig = kTrajectoryConfigSlow;
+    public static TrajectoryConfig kTrajectoryConfigBackwards = kTrajectoryConfigBackwardsSlow;
   }
 
   public static final class NeoMotorConstants {
@@ -163,7 +172,7 @@ public final class Constants {
     public static final double kIntakeSpeed = 0.7;
     public static final double kIntakeUnjamSpeed = -1;
     public static final double kMidRollerIntakeSpeed = 0.5;
-    public static final double kMidRollerGrabSpeed = -0.03; //TODO
+    public static final double kMidRollerGrabSpeed = -0.03;
     public static final double kMidRollerKickSpeed = 0.4;
   }
 

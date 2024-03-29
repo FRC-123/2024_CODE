@@ -185,6 +185,15 @@ public class RobotContainer {
             m_robotDrive.setFieldRelativeOffset(-60);
         }
     }
+
+    if(type.getSelected().equals(AutoType.Four_Piece_Left) || type.getSelected().equals(AutoType.Four_Piece_Right)) {
+        AutoConstants.kTrajectoryConfig = AutoConstants.kTrajectoryConfigFast;
+        AutoConstants.kTrajectoryConfigBackwards = AutoConstants.kTrajectoryConfigBackwardsFast;
+    }
+    else {
+        AutoConstants.kTrajectoryConfig = AutoConstants.kTrajectoryConfigSlow;
+        AutoConstants.kTrajectoryConfigBackwards = AutoConstants.kTrajectoryConfigBackwardsSlow;
+    }
     //m_robotDrive.resetOdometry(moveBackTraj.getInitialPose());
 
     //shootWhileCommand = new ShootWhileMovingCommand(m_ShooterSubsystem, m_robotDrive);
@@ -217,7 +226,7 @@ public class RobotContainer {
         return new InstantCommand(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal))
             .andThen(new WaitUntilCommand(m_ShooterSubsystem::atSpeed))
             .andThen(() -> m_ShooterSubsystem.kickNote(false))
-            .andThen(new WaitUntilCommand(() -> !m_ShooterSubsystem.holdingNote))
+            .andThen(new ParallelRaceGroup(new WaitUntilCommand(() -> !m_ShooterSubsystem.holdingNote), new WaitCommand(0.25)))
             .andThen(new WaitCommand(0.25))
             .andThen(() -> m_ShooterSubsystem.stopRollers(true))
             .andThen(() -> m_ShooterSubsystem.setShooterVelocity(0))
@@ -265,7 +274,7 @@ public class RobotContainer {
         return new InstantCommand(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal))
             .andThen(new WaitUntilCommand(m_ShooterSubsystem::atSpeed))
             .andThen(() -> m_ShooterSubsystem.kickNote(false))
-            .andThen(new WaitUntilCommand(() -> !m_ShooterSubsystem.holdingNote))
+            .andThen(new ParallelRaceGroup(new WaitUntilCommand(() -> !m_ShooterSubsystem.holdingNote), new WaitCommand(0.25)))
             .andThen(new WaitCommand(0.25))
             .andThen(() -> m_ShooterSubsystem.stopRollers(true))
             .andThen(() -> m_ShooterSubsystem.setShooterVelocity(0))
@@ -313,7 +322,7 @@ public class RobotContainer {
         return new InstantCommand(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal))
             .andThen(new WaitUntilCommand(m_ShooterSubsystem::atSpeed))
             .andThen(() -> m_ShooterSubsystem.kickNote(false))
-            .andThen(new WaitUntilCommand(() -> !m_ShooterSubsystem.holdingNote))
+            .andThen(new ParallelRaceGroup(new WaitUntilCommand(() -> !m_ShooterSubsystem.holdingNote), new WaitCommand(0.25)))
             .andThen(new WaitCommand(0.25))
             .andThen(() -> m_ShooterSubsystem.stopRollers(true))
             .andThen(() -> m_ShooterSubsystem.setShooterVelocity(0))
@@ -334,7 +343,7 @@ public class RobotContainer {
         return new InstantCommand(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal))
             .andThen(new WaitUntilCommand(m_ShooterSubsystem::atSpeed))
             .andThen(() -> m_ShooterSubsystem.kickNote(false))
-            .andThen(new WaitUntilCommand(() -> !m_ShooterSubsystem.holdingNote))
+            .andThen(new ParallelRaceGroup(new WaitUntilCommand(() -> !m_ShooterSubsystem.holdingNote), new WaitCommand(0.25)))
             .andThen(new WaitCommand(0.25))
             .andThen(() -> m_ShooterSubsystem.stopRollers(true))
             .andThen(() -> m_ShooterSubsystem.setShooterVelocity(0))
@@ -407,7 +416,7 @@ public class RobotContainer {
         return new InstantCommand(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal))
             .andThen(new WaitUntilCommand(m_ShooterSubsystem::atSpeed))
             .andThen(() -> m_ShooterSubsystem.kickNote(false))
-            .andThen(new WaitUntilCommand(() -> !m_ShooterSubsystem.holdingNote))
+            .andThen(new ParallelRaceGroup(new WaitUntilCommand(() -> !m_ShooterSubsystem.holdingNote), new WaitCommand(0.25)))
             .andThen(new WaitCommand(0.25))
             .andThen(() -> m_ShooterSubsystem.stopRollers(true))
             .andThen(() -> m_ShooterSubsystem.setShooterVelocity(0))
@@ -484,7 +493,7 @@ public class RobotContainer {
             .andThen(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal))
             .andThen(new WaitUntilCommand(m_ShooterSubsystem::atSpeed))
             .andThen(() -> m_ShooterSubsystem.kickNote(false))
-            .andThen(new WaitUntilCommand(() -> !m_ShooterSubsystem.holdingNote))
+            .andThen(new ParallelRaceGroup(new WaitUntilCommand(() -> !m_ShooterSubsystem.holdingNote), new WaitCommand(0.25)))
             .andThen(new WaitCommand(0.25))
             .andThen(() -> m_ShooterSubsystem.stopRollers(true))
             .andThen(getOutCommand(true, angle.getSelected(), DriverStation.getAlliance().get()))
