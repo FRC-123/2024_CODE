@@ -382,7 +382,7 @@ public class RobotContainer {
                 })
                 .andThen(new WaitCommand(0.25))
                 .andThen(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal + 250))
-                .andThen(new WaitUntilCommand(this::atPlace))
+                .andThen(new WaitUntilCommand(this::atPlaceFourPiece))
                 .andThen(() -> {
                     m_ShooterSubsystem.kickNote(false);
                     m_ShooterSubsystem.setIntakeRollers(ShooterConstants.kIntakeSpeed);
@@ -392,19 +392,19 @@ public class RobotContainer {
                 .andThen(() -> m_ShooterSubsystem.intake())
             ))
             .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
-            .andThen(new ParallelRaceGroup(fourPieceReturnLastNoteLeft().andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive), new WaitCommand(0.75)
+            .andThen(new ParallelCommandGroup(fourPieceReturnLastNoteLeft().andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive), new WaitCommand(0.75)
                 .andThen(() -> {
                     m_ShooterSubsystem.stopRollers(false);
                     m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
                 })
                 .andThen(new WaitCommand(0.25))
                 .andThen(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal + 250))
-                .andThen(new WaitUntilCommand(this::atPlace))
+                /*.andThen(new WaitUntilCommand(this::atPlace))
                 .andThen(() -> m_ShooterSubsystem.kickNote(false))
                 .andThen(new WaitCommand(0.25))
-                .andThen(() -> m_ShooterSubsystem.stopRollers(true))
+                .andThen(() -> m_ShooterSubsystem.stopRollers(true))*/
             ))
-            .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
+            //.andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
             .andThen(() -> m_ShooterSubsystem.kickNote(false))
             .andThen(new WaitCommand(0.25))
             .andThen(() -> m_ShooterSubsystem.stopRollers(true));
@@ -455,7 +455,7 @@ public class RobotContainer {
                 })
                 .andThen(new WaitCommand(0.25))
                 .andThen(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal + 250))
-                .andThen(new WaitUntilCommand(this::atPlace))
+                .andThen(new WaitUntilCommand(this::atPlaceFourPiece))
                 .andThen(() -> {
                     m_ShooterSubsystem.kickNote(false);
                     m_ShooterSubsystem.setIntakeRollers(ShooterConstants.kIntakeSpeed);
@@ -465,19 +465,19 @@ public class RobotContainer {
                 .andThen(() -> m_ShooterSubsystem.intake())
             ))
             .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
-            .andThen(new ParallelRaceGroup(fourPieceReturnLastNoteRight().andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive), new WaitCommand(0.75)
+            .andThen(new ParallelCommandGroup(fourPieceReturnLastNoteRight().andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive), new WaitCommand(0.75)
                 .andThen(() -> {
                     m_ShooterSubsystem.stopRollers(false);
                     m_ShooterSubsystem.setMidRollers(ShooterConstants.kMidRollerGrabSpeed);
                 })
                 .andThen(new WaitCommand(0.25))
                 .andThen(() -> m_ShooterSubsystem.speedUp(ShooterConstants.kShooterSpeedNormal + 250))
-                .andThen(new WaitUntilCommand(this::atPlace))
+                /*.andThen(new WaitUntilCommand(this::atPlace))
                 .andThen(() -> m_ShooterSubsystem.kickNote(false))
                 .andThen(new WaitCommand(0.25))
-                .andThen(() -> m_ShooterSubsystem.stopRollers(true))
+                .andThen(() -> m_ShooterSubsystem.stopRollers(true))*/
             ))
-            .andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
+            //.andThen(() -> m_robotDrive.drive(0, 0, 0, false, false), m_robotDrive)
             .andThen(() -> m_ShooterSubsystem.kickNote(false))
             .andThen(new WaitCommand(0.25))
             .andThen(() -> m_ShooterSubsystem.stopRollers(true));
@@ -834,7 +834,7 @@ public class RobotContainer {
         Trajectory traj = TrajectoryGenerator.generateTrajectory(
             centerNotePoint,
             List.of(new Translation2d(1.42, 5.553), new Translation2d(2.05, 6.6)),
-            new Pose2d(/*MAY NEED TO BE 2.8*/2.896, 7.3, new Rotation2d(-Math.PI + 0.463647609001)),
+            new Pose2d(/*MAY NEED TO BE 2.8*/2.896, 6.906, new Rotation2d(-Math.PI + 0.463647609001)),
             AutoConstants.kTrajectoryConfigBackwards);
         SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(traj, 
         m_robotDrive::getPose, 
@@ -850,9 +850,9 @@ public class RobotContainer {
 
     private Command fourPieceFourthNoteLeft() {
         Trajectory traj = TrajectoryGenerator.generateTrajectory(
-            new Pose2d(/*2.896*/2.896, 7.3, new Rotation2d(0.45)),
-            List.of(new Translation2d(1.15, 5.553), new Translation2d(1.6269, 4.506)),
-            new Pose2d(/*2.896*/2.3, 4.425, new Rotation2d(Math.PI)),
+            new Pose2d(/*2.896*/2.896, 6.906, new Rotation2d(0.45)),
+            List.of(new Translation2d(1.2, 5.553), new Translation2d(1.8269, 4.206)),
+            new Pose2d(/*2.896*/2.5, 4.125, new Rotation2d(Math.PI)),
             AutoConstants.kTrajectoryConfigBackwards);
         SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(traj, 
         m_robotDrive::getPose, 
@@ -868,9 +868,9 @@ public class RobotContainer {
 
     private Command fourPieceReturnLastNoteLeft() {
         Trajectory traj = TrajectoryGenerator.generateTrajectory(
-            new Pose2d(/*2.896*/2.3, 4.425, new Rotation2d(0)),
+            new Pose2d(/*2.896*/2.5, 4.125, new Rotation2d(0)),
             List.of(),
-            new Pose2d(/*2.896*/0.9, 5.553, new Rotation2d(-Math.PI/2)),
+            new Pose2d(/*2.896*/0.95, 5.553, new Rotation2d(-Math.PI/2)),
             AutoConstants.kTrajectoryConfigBackwards);
         SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(traj, 
         m_robotDrive::getPose, 
@@ -888,7 +888,7 @@ public class RobotContainer {
         Trajectory traj = TrajectoryGenerator.generateTrajectory(
             centerNotePoint,
             List.of(new Translation2d(1.42, 5.553), new Translation2d(2.05, 4.506)),
-            new Pose2d(/*MAY NEED TO BE 2.8*/2.896, 3.806, new Rotation2d(Math.PI - 0.463647609001)),
+            new Pose2d(/*MAY NEED TO BE 2.8*/2.896, 4.2, new Rotation2d(Math.PI - 0.463647609001)),
             AutoConstants.kTrajectoryConfigBackwards);
         SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(traj, 
         m_robotDrive::getPose, 
@@ -904,9 +904,9 @@ public class RobotContainer {
 
     private Command fourPieceFourthNoteRight() {
         Trajectory traj = TrajectoryGenerator.generateTrajectory(
-            new Pose2d(/*2.896*/2.896, 3.806, new Rotation2d(-0.45)),
-            List.of(new Translation2d(1.15, 5.553), new Translation2d(1.6269, 6.6)),
-            new Pose2d(/*2.896*/2.3, 6.681, new Rotation2d(-Math.PI)),
+            new Pose2d(/*2.896*/2.896, 4.2, new Rotation2d(-0.45)),
+            List.of(new Translation2d(1.2, 5.553), new Translation2d(1.8269, 6.9)),
+            new Pose2d(/*2.896*/2.5, 6.981, new Rotation2d(-Math.PI)),
             AutoConstants.kTrajectoryConfigBackwards);
         SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(traj, 
         m_robotDrive::getPose, 
@@ -922,9 +922,9 @@ public class RobotContainer {
 
     private Command fourPieceReturnLastNoteRight() {
         Trajectory traj = TrajectoryGenerator.generateTrajectory(
-            new Pose2d(/*2.896*/2.3, 6.681, new Rotation2d(0)),
+            new Pose2d(/*2.896*/2.5, 6.981, new Rotation2d(0)),
             List.of(),
-            new Pose2d(/*2.896*/0.9, 5.553, new Rotation2d(Math.PI/2)),
+            new Pose2d(/*2.896*/0.95, 5.553, new Rotation2d(Math.PI/2)),
             AutoConstants.kTrajectoryConfigBackwards);
         SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(traj, 
         m_robotDrive::getPose, 
@@ -972,7 +972,13 @@ public class RobotContainer {
 
     private boolean atPlace() {
         Transform2d diff = m_robotDrive.getPose().minus(new Pose2d(1.3269, 5.553, new Rotation2d(0)));
-        SmartDashboard.putString("diff", diff.toString());
+        //SmartDashboard.putString("diff", diff.toString());
+        return (Math.abs(diff.getX()) < 0.3 && Math.abs(diff.getY()) < 0.5);
+    }
+
+    private boolean atPlaceFourPiece() {
+        Transform2d diff = m_robotDrive.getPose().minus(new Pose2d(1.1769, 5.553, new Rotation2d(0)));
+        //SmartDashboard.putString("diff", diff.toString());
         return (Math.abs(diff.getX()) < 0.3 && Math.abs(diff.getY()) < 0.5);
     }
 }
